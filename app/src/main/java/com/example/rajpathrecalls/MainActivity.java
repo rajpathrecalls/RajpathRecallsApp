@@ -1,5 +1,6 @@
 package com.example.rajpathrecalls;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
@@ -16,7 +17,9 @@ public class MainActivity extends AppCompatActivity implements RadioUpdateCallba
 
     static RadioPlayer radioPlayer;
     Fragment current_fragment;
+    boolean isActive;
     private BottomNavigationView navBar;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity implements RadioUpdateCallba
         if(savedInstanceState == null) {
             radioPlayer = new RadioPlayer(this);
             radioPlayer.prepare();
+            startService(new Intent(getBaseContext(), AppCloseService.class));
             goToFragment(new ListenFragment());
         }
         else {   //config change
@@ -37,21 +41,20 @@ public class MainActivity extends AppCompatActivity implements RadioUpdateCallba
     }
 
     @Override
+    public void onBackPressed() {
+        moveTaskToBack(false);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (isFinishing()) {     //not config change
-            radioPlayer.finish();
-        } else {
+        if (isChangingConfigurations()) {
             radioPlayer.releaseContextVars();
         }
     }
 
     @Override
     public void onRadioConnectionUpdate(int connection_status) {
-        if(current_fragment instanceof ListenFragment){
-            ((ListenFragment) current_fragment).onRadioConnectionUpdate(connection_status);
-        }
-
         if(connection_status == RadioPlayer.CONNECTION_FAILED){
             showSnackbar("Connection Failed", Snackbar.LENGTH_INDEFINITE,
                     "RETRY", new View.OnClickListener() {
@@ -67,13 +70,26 @@ public class MainActivity extends AppCompatActivity implements RadioUpdateCallba
 
     @Override
     public void onRadioPausePlay(boolean isPaused) {
-        Log.i("mylog", "class callback");
         if(current_fragment instanceof ListenFragment){
             ((ListenFragment) current_fragment).onRadioPausePlay(isPaused);
         }
     }
 
+    @Override
+    public void onRadioSyncUpdate(boolean isSyncSuccess) {
+        if(current_fragment instanceof ListenFragment){
+            ((ListenFragment) current_fragment).onRadioSyncUpdate(isSyncSuccess);
+        }
+        if(!isSyncSuccess){
+            showSnackbar("Sync Failed", Snackbar.LENGTH_SHORT, null, null);
+        } else {
+            showSnackbar("Synced to livestream", Snackbar.LENGTH_SHORT, null, null);
+        }
+    }
+
     void showSnackbar(String message, int duration, String action_message, View.OnClickListener action_listener){
+        if(!isActive)
+            return;
         Snackbar bar = Snackbar.make(navBar, message, duration);
         if(action_message != null)
             bar.setAction(action_message, action_listener);
@@ -106,5 +122,17 @@ public class MainActivity extends AppCompatActivity implements RadioUpdateCallba
     void goToFragment(Fragment fragment){
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
                 fragment).commit();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isActive = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isActive = true;
     }
 }

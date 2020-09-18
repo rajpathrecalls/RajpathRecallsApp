@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.transition.TransitionManager;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,8 +28,8 @@ public class ListenFragment extends Fragment {
     TextView offset_text;
     Button sync_button;
     ProgressBar sync_progress;
+
     MediaPlayer bg_player = null;
-    boolean isSyncing = false, isFragmentActive;
 
     @Nullable
     @Override
@@ -60,6 +59,7 @@ public class ListenFragment extends Fragment {
             @Override
             public boolean onError(MediaPlayer mp, int what, int extra) {
                 background_video.setVisibility(View.GONE);
+                bg_player = null;
                 return true;
             }
         });
@@ -69,106 +69,106 @@ public class ListenFragment extends Fragment {
         sync_button = fragmentView.findViewById(R.id.sync_button);
         sync_progress = fragmentView.findViewById(R.id.sync_progress);
 
-        play_pause_btn.setOnClickListener(pauseListener);
-        sync_button.setOnClickListener(syncListener);
+        play_pause_btn.setOnClickListener(onPlayPauseClick);
+        sync_button.setOnClickListener(onSyncClick);
         return fragmentView;
     }
 
-    private View.OnClickListener pauseListener = new View.OnClickListener() {
+    private View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            Log.i("mylog", "clicked");
             int connection_state = MainActivity.radioPlayer.getConnectionState();
             if (connection_state == RadioPlayer.CONNECTION_SUCCESS) {
-                MainActivity.radioPlayer.togglePlayer();
+                MainActivity.radioPlayer.togglePlayer();        //will call callback
             } else if (connection_state == RadioPlayer.CONNECTION_TRYING) {
                 ((MainActivity)getContext()).showSnackbar("Establishing connection...", Snackbar.LENGTH_SHORT, null, null);
+            } else if(connection_state == RadioPlayer.CONNECTION_FAILED) {
+                ((MainActivity)getContext()).onRadioConnectionUpdate(RadioPlayer.CONNECTION_FAILED);    //show snackbar again
             }
         }
     };
 
-    void updatePlayPauseIcon() {
-        play_pause_btn.setImageResource(MainActivity.radioPlayer.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
+    //RadioPlayer callback
+    void onRadioPausePlay(boolean isPaused){
+        updatePlayPauseView();
+        if (!isPaused && MainActivity.radioPlayer.getPlayerOffset() != 0) {
+            updateSyncViews(0);
+        }
     }
 
-    private View.OnClickListener syncListener = new View.OnClickListener() {
+    void updatePlayPauseView() {
+        //TODO animate view change
+        if(((MainActivity)getContext()).isActive)
+            play_pause_btn.setImageResource(MainActivity.radioPlayer.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
+    }
+
+    private View.OnClickListener onSyncClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             MainActivity.radioPlayer.syncToRadio();
-            isSyncing = true;
-            handleSyncViews();
+            updateSyncViews(1);
         }
     };
 
-    //callback
-    void onRadioConnectionUpdate(int connection_status) {
-        if (connection_status == RadioPlayer.CONNECTION_SUCCESS) {
-            if (isSyncing) {
-                if(MainActivity.radioPlayer.isPaused())
-                    MainActivity.radioPlayer.togglePlayer();
-                isSyncing = false;
-                handleSyncViews();
-            }
-        }
-    }
-
-    //callback
-    void onRadioPausePlay(boolean isPaused){
-        Log.i("mylog", "called");
-        updatePlayPauseIcon();
-        if (!isPaused && MainActivity.radioPlayer.getPlayerOffset() != 0) {
-            showSyncViews(MainActivity.radioPlayer.getPlayerOffset());
-        }
-    }
-
-    void showSyncViews(int offset_in_sec) {
-        int elapsed_min = offset_in_sec / 60, elapsed_sec = offset_in_sec % 60;
-
-        String elapsed_time;
-        if(elapsed_min == 0){
-            elapsed_time = elapsed_sec + " seconds";
+    //RadioPlayer callback
+    void onRadioSyncUpdate(boolean isSyncSuccess){
+        if (isSyncSuccess) {
+            if(MainActivity.radioPlayer.isPaused())
+                MainActivity.radioPlayer.togglePlayer();
+            updateSyncViews(2);
         } else {
-            elapsed_time = elapsed_min + ":" + (elapsed_sec < 10 ? "0" : "") + elapsed_sec +
-                    " minutes";
+            updateSyncViews(0);
         }
-        elapsed_time +=  " behind livestream";
-        TransitionManager.beginDelayedTransition((ConstraintLayout)offset_text.getParent());
-        offset_text.setText(elapsed_time);
-        offset_text.setVisibility(View.VISIBLE);
-        sync_button.setEnabled(true);
-        sync_button.setText("SYNC");
-        sync_button.setVisibility(View.VISIBLE);
     }
 
-    void handleSyncViews() {
+    void updateSyncViews(int sync_state) {
+        if(!((MainActivity)getContext()).isActive)
+            return;
+
         TransitionManager.beginDelayedTransition((ConstraintLayout) sync_button.getParent());
-        if (isSyncing) {
+
+        if(sync_state == 0){    //sync button
+            int offset_in_sec = MainActivity.radioPlayer.getPlayerOffset();
+            int elapsed_min = offset_in_sec / 60, elapsed_sec = offset_in_sec % 60;
+
+            String elapsed_time;
+            if(elapsed_min == 0)
+                elapsed_time = elapsed_sec + " seconds";
+            else
+                elapsed_time = elapsed_min + ":" + (elapsed_sec < 10 ? "0" : "") + elapsed_sec + " minutes";
+
+            elapsed_time +=  " behind livestream";
+            offset_text.setText(elapsed_time);
+            offset_text.setVisibility(View.VISIBLE);
+            sync_button.setEnabled(true);
+            sync_button.setText("SYNC");
+            sync_button.setVisibility(View.VISIBLE);
+            sync_progress.setVisibility(View.GONE);
+
+        } else if (sync_state == 1) {      //sync progress
             offset_text.setVisibility(View.GONE);
             sync_button.setText("SYNCING");
             sync_button.setEnabled(false);
             sync_progress.setVisibility(View.VISIBLE);
-        } else {
+
+        } else if(sync_state == 2){     //sync operation completed
+            offset_text.setVisibility(View.GONE);
             sync_button.setVisibility(View.GONE);
             sync_progress.setVisibility(View.GONE);
         }
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-        isFragmentActive = false;
-    }
-
+    //reload views on resume
     @Override
     public void onResume() {
         super.onResume();
-        isFragmentActive = true;
-        updatePlayPauseIcon();
-        int current_offset = MainActivity.radioPlayer.getPlayerOffset();
-        if(current_offset != 0)
-            showSyncViews(current_offset);
+
+        //update any view changes that might have happened while minimised
+        updatePlayPauseView();
+        if(MainActivity.radioPlayer.getPlayerOffset() != 0)
+            updateSyncViews(0);  //show sync views
         else
-            handleSyncViews();  //disable sync views
+            updateSyncViews(2);  //disable sync views [if window wasn't active]
     }
 
     @Override

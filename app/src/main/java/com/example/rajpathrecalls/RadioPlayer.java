@@ -19,6 +19,7 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.media.session.MediaButtonReceiver;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -33,33 +34,33 @@ public class RadioPlayer {
     private AudioManager audioManager;
     private int connection_state = CONNECTION_FAILED;
     private NotificationManagerCompat notificationManager;
+    private MediaSessionCompat mediaSession;
 
     private final String CHANNEL_ID = "rajpathrecalls";// The id of the channel.
     static final int CONNECTION_SUCCESS = 1, CONNECTION_TRYING = 0, CONNECTION_FAILED = -1;
 
     RadioPlayer(Context ctx) {
         context = new WeakReference<>(ctx);
-        notificationManager = NotificationManagerCompat.from(context.get());
-        audioManager = (AudioManager) context.get().getSystemService(Context.AUDIO_SERVICE);
-        mediaPlayer = new MediaPlayer();
     }
 
     void prepare() {
-        connectToRadio();
+        notificationManager = NotificationManagerCompat.from(context.get());
+        audioManager = (AudioManager) context.get().getSystemService(Context.AUDIO_SERVICE);
+        mediaPlayer = new MediaPlayer();
+        mediaSession = new MediaSessionCompat(context.get(), "tag");
+        //TODO mediabutton receive
 
+        connectToRadio();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager mNotificationManager = (NotificationManager) context.get().getSystemService(Context.NOTIFICATION_SERVICE);
             CharSequence name = context.get().getResources().getString(R.string.app_name);// The user-visible name of the channel.
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(mChannel);
         }
-        context.get().registerReceiver(notifReceiver, new IntentFilter("playpause"));
     }
 
     void updateContext(Context ctx) {
         context = new WeakReference<>(ctx);
-        //re-register receivers
-        context.get().registerReceiver(notifReceiver, new IntentFilter("playpause"));
         if (!isPaused)
             context.get().registerReceiver(pauseForOutputChange, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
     }
@@ -85,15 +86,15 @@ public class RadioPlayer {
     }
 
     void releaseContextVars() {
-        if (!isPaused)
+        if (!isPaused) {
             context.get().unregisterReceiver(pauseForOutputChange);
-        context.get().unregisterReceiver(notifReceiver);
-
+        }
     }
 
     void finish() {
-        context.get().unregisterReceiver(notifReceiver);
+        releaseContextVars();
         mediaPlayer.release();
+        mediaSession.release();
         notificationManager.cancelAll();
     }
 
@@ -122,17 +123,17 @@ public class RadioPlayer {
 
     private void makeNotification() {
         Bitmap pic = BitmapFactory.decodeResource(context.get().getResources(), R.drawable.notif_album_art);
-        MediaSessionCompat msess = new MediaSessionCompat(context.get(), "tag");
-        NotificationCompat.Builder mBuilder;
 
-        Intent notifButtonIntent = new Intent(context.get(), NotificationActionService.class).setAction("playpause");
+        Intent notifButtonIntent = new Intent(context.get(), NotificationActionReceiver.class).setAction("playpause");
         PendingIntent actionIntent = PendingIntent.getBroadcast(context.get(), 0, notifButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        Intent notifClickIntent = new Intent(context.get(), MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent notifClickIntent = new Intent(context.get(), MainActivity.class);
+        notifClickIntent.setAction(Intent.ACTION_MAIN);
+        notifClickIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         PendingIntent contentIntent = PendingIntent.getActivity(context.get(), 0, notifClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-        mBuilder = new NotificationCompat.Builder(context.get(), CHANNEL_ID)
-                .setSmallIcon(R.mipmap.ic_launcher)
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(context.get(), CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_notif)
                 .setContentTitle("Lorem Ipsum")
                 .setContentText("Lorem ipsum dolor sit amet")
                 .setLargeIcon(pic)
@@ -143,14 +144,15 @@ public class RadioPlayer {
                 .addAction(isPaused ? R.drawable.ic_play : R.drawable.ic_pause,
                         "playpause", actionIntent)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
-                        .setMediaSession(msess.getSessionToken())
+                        .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0))
                 .setProgress(0, 0, true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-
         notificationManager.notify(1, mBuilder.build());
     }
+
+
 
     private void setPaused(boolean is_paused) {
         isPaused = is_paused;
@@ -162,8 +164,10 @@ public class RadioPlayer {
         });
     }
 
-    private void updateConnectionState(int new_state) {
+    private void updateConnectionState(int new_state, boolean shouldCallback) {
         connection_state = new_state;
+        if(!shouldCallback)
+            return;
 
         //dont want value to change before runnable is run
         final int current_val = connection_state;
@@ -188,11 +192,31 @@ public class RadioPlayer {
         }
     };
 
+    private void setSynced(boolean isSyncSuccess){
+        if(isSyncSuccess) {
+            player_offset = 0;  //synced
+            player_offset_start = -1;
+            postCallback(new Runnable() {
+                @Override
+                public void run() {
+                    ((RadioUpdateCallback) context.get()).onRadioSyncUpdate(true);
+                }
+            });
+        } else {
+            postCallback(new Runnable() {
+                @Override
+                public void run() {
+                    ((RadioUpdateCallback) context.get()).onRadioSyncUpdate(false);
+                }
+            });
+        }
+    }
+
     private Runnable connectionRunnable = new Runnable() {
         @Override
         public void run() {
             try {
-                updateConnectionState(CONNECTION_TRYING);
+                updateConnectionState(CONNECTION_TRYING, false);
                 URL url = new URL("https://stream.zeno.fm/2ce1nx83g2zuv");
                 HttpURLConnection ucon = (HttpURLConnection) url.openConnection();
                 String myurl = ucon.getHeaderField("Location");
@@ -208,15 +232,24 @@ public class RadioPlayer {
                         togglePlayer(); //update notification too
                     else
                         mediaPlayer.start();
+                    setSynced(true);
+                } else {
+                    updateConnectionState(CONNECTION_SUCCESS, true);
                 }
-                updateConnectionState(CONNECTION_SUCCESS);
-                player_offset = 0;  //synced
-                player_offset_start = -1;
 
             } catch (IOException | NullPointerException e) {
-                //nullpointer if connection redirect fails from substring call
+                //nullpointerexception if connection redirect fails from substring call
                 Log.i("mylog", "Radio Connection Failed: " + e.getMessage());
-                updateConnectionState(CONNECTION_FAILED);
+
+                if (temp_switch != null) {      //sync failed. go back to old media player
+                    mediaPlayer.release();
+                    mediaPlayer = temp_switch;
+                    temp_switch = null;
+                    updateConnectionState(CONNECTION_SUCCESS, false); //old player is connected
+                    setSynced(false);
+                } else {
+                    updateConnectionState(CONNECTION_FAILED, true);
+                }
             }
         }
     };
@@ -225,13 +258,13 @@ public class RadioPlayer {
         new Thread(connectionRunnable).start();
     }
 
-    private BroadcastReceiver notifReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            //play pause from notif
-            togglePlayer();
-        }
-    };
+//    private MediaButtonReceiver mediaButtonReceiver = new MediaButtonReceiver(){
+//        @Override
+//        public void onReceive(Context context, Intent intent) {
+//            Log.i("mylog", "received media click");
+//            togglePlayer();
+//        }
+//    };
 
     //pause when listening
     private BroadcastReceiver pauseForOutputChange = new BroadcastReceiver() {

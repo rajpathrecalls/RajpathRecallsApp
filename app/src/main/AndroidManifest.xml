@@ -16,7 +16,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <receiver android:name=".NotificationActionService"/>
+        <receiver android:name=".NotificationActionReceiver"/>
+        <service android:name=".AppCloseService"
+            android:stopWithTask="false"/>
     </application>
 
 </manifest>

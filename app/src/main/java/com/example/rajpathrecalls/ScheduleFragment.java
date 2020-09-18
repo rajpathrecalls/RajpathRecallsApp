@@ -13,6 +13,7 @@ public class ScheduleFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        ((MainActivity)getContext()).current_fragment = this;
         return inflater.inflate(R.layout.fragment_schedule, container, false);
     }
 }
