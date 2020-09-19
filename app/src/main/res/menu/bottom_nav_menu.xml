@@ -3,16 +3,11 @@
     <item
         android:id="@+id/nav_listen"
         android:icon="@drawable/menu_ic_listen"
-        android:title="Listen" />
+        android:title="@string/listen_menu_title" />
 
     <item
         android:id="@+id/nav_schedule"
         android:icon="@drawable/menu_ic_schedule"
-        android:title="Schedule" />
-
-    <item
-        android:id="@+id/nav_settings"
-        android:icon="@drawable/menu_ic_settings"
-        android:title="Settings" />
+        android:title="@string/schedule_menu_title" />
 
 </menu>
