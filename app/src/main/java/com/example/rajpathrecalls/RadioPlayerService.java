@@ -11,13 +11,13 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
+import android.media.AudioFocusRequest;
 import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 
@@ -26,26 +26,33 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.ProgressiveMediaSource;
+import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener {
+public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
     private boolean isPaused = true;
     private long player_offset = 0, player_offset_start = -1;
-    private MediaPlayer mediaPlayer, temp_switch = null;
+    private SimpleExoPlayer mediaPlayer, temp_switch = null;
     private AudioManager audioManager;
     private int connection_state = CONNECTION_FAILED;
     private NotificationManagerCompat notificationManager;
     private MediaSessionCompat mediaSession;
 
-    private final String STREAM_URL = "https://stream.zeno.fm/2ce1nx83g2zuv";
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
             PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause";        //public broadcasts action, so need unique
 
     static final int CONNECTION_SUCCESS = 1, CONNECTION_TRYING = 2, CONNECTION_FAILED = 3;
-    static final String PLAY_PAUSE_BROADCAST ="playpause", CONNECTION_BROADCAST = "connectionupdate",
+    static final String PLAY_PAUSE_BROADCAST = "playpause", CONNECTION_BROADCAST = "connectionupdate",
             SYNC_BROADCAST = "sync_update";     //local broadcast actions
 
     public class LocalBinder extends Binder {
@@ -61,21 +68,26 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         super.onCreate();
         notificationManager = NotificationManagerCompat.from(this);
         audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        mediaPlayer = new MediaPlayer();
+        mediaPlayer = new SimpleExoPlayer.Builder(this).build();
 
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_MEDIA)
-                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                .build()
-        );
+//        mediaPlayer.setAudioAttributes(
+//                new AudioAttributes.Builder()
+//                .setUsage(AudioAttributes.USAGE_MEDIA)
+//                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+//                .build()
+//        );
+
         mediaSession = new MediaSessionCompat(this, CHANNEL_ID);
-
-        PlaybackStateCompat state = new PlaybackStateCompat.Builder()
-                .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE)
-                .setState(PlaybackStateCompat.STATE_PAUSED, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 0)
-                .build();
-        mediaSession.setPlaybackState(state);
+        mediaSession.setCallback(new MediaSessionCompat.Callback() {
+            @Override
+            public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
+                KeyEvent keyEvent = (KeyEvent) mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
+                    togglePlayer(!isPaused);
+                }
+                return super.onMediaButtonEvent(mediaButtonEvent);
+            }
+        });
 
         connectToRadio();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -93,21 +105,22 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             return;
 
         if (isPaused) {
-            int result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-                mediaSession.setCallback(new MediaSessionCompat.Callback() {
-                    @Override
-                    public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-                        KeyEvent keyEvent  = (KeyEvent)mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-                        if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
-                            togglePlayer(!isPaused);
-                        }
-                        return super.onMediaButtonEvent(mediaButtonEvent);
-                    }
-                }
-                );
+            int result;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                result = audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                        .setAudioAttributes(new AudioAttributes.Builder()
+                                .setUsage(AudioAttributes.USAGE_MEDIA)
+                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                .build())
+                        .setOnAudioFocusChangeListener(this)
+                        .build());
+            } else {
+                result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+            }
 
-                mediaPlayer.start();
+            if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+                mediaSession.setActive(true);
+                mediaPlayer.play();
                 updatePlayerOffset();
                 registerReceiver(pauseForOutputChange, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
                 setPaused(false);
@@ -124,7 +137,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
     void syncToRadio() {
         temp_switch = mediaPlayer;
-        mediaPlayer = new MediaPlayer();
+        mediaPlayer = new SimpleExoPlayer.Builder(this).build();
         connectToRadio();
     }
 
@@ -176,7 +189,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         notificationManager.notify(1, mBuilder.build());
     }
 
-    private void sendLocalBroadcast(Intent intent){
+    private void sendLocalBroadcast(Intent intent) {
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
@@ -189,7 +202,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
     private void updateConnectionState(int new_state, boolean shouldCallback) {
         connection_state = new_state;
-        if(!shouldCallback)
+        if (!shouldCallback)
             return;
 
         Intent intent = new Intent(CONNECTION_BROADCAST);
@@ -201,20 +214,96 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     public void onAudioFocusChange(int focusChange) {
         if (focusChange == AudioManager.AUDIOFOCUS_LOSS || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
             togglePlayer(true);
-            mediaSession.setCallback(null);
             audioManager.abandonAudioFocus(this);
-            mediaSession.setCallback(null);
+            mediaSession.setActive(false);
         }
     }
 
-    private void setSynced(boolean isSyncSuccess){
-        if(isSyncSuccess) {
+    private void setSynced(boolean isSyncSuccess) {
+        if (isSyncSuccess) {
             player_offset = 0;  //synced
             player_offset_start = -1;
         }
         Intent intent = new Intent(SYNC_BROADCAST);
         intent.putExtra(SYNC_BROADCAST, isSyncSuccess);
         sendLocalBroadcast(intent);
+    }
+
+    void connectToRadio() {
+        //get redirect url
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String myurl;
+                updateConnectionState(CONNECTION_TRYING, false);
+                try {
+                    HttpURLConnection ucon = (HttpURLConnection)
+                            new URL("https://stream.zeno.fm/2ce1nx83g2zuv").openConnection();
+                    myurl = ucon.getHeaderField("Location");
+                    if (!"https".equals(myurl.substring(0, 5)))
+                        myurl = "https" + myurl.substring(4);
+                } catch (IOException | NullPointerException e) {
+                    myurl = "connection.failed";
+                }
+                connectToURL(myurl);
+            }
+        }).start();
+    }
+
+    private void connectToURL(final String url) {
+        //run on ui thread
+        new Handler(getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
+                        RadioPlayerService.this, "exoplayer-codelab");
+                MediaSource source = new ProgressiveMediaSource.Factory(dataSourceFactory)
+                        .createMediaSource(MediaItem.fromUri(url));
+
+                mediaPlayer.setMediaSource(source);
+                mediaPlayer.addListener(RadioPlayerService.this);
+                mediaPlayer.prepare();
+            }
+        });
+    }
+
+    //exoplayer event listener
+    @Override
+    public void onPlaybackStateChanged(int state) {
+
+        if (state == SimpleExoPlayer.STATE_READY) {
+            if (temp_switch != null) {      //sync op
+                temp_switch.release();
+                temp_switch = null;
+                if (isPaused)
+                    togglePlayer(false); //need to update notification if paused
+                else
+                    mediaPlayer.play();        //no need to update notification here
+
+                setSynced(true);
+                updateConnectionState(CONNECTION_SUCCESS, false);
+
+            } else {
+                updateConnectionState(CONNECTION_SUCCESS, true);
+            }
+        }
+    }
+
+    //exoplayer event listener
+    @Override
+    public void onPlayerError(ExoPlaybackException error) {
+        Log.i("mylog", "Radio Connection Failed: " + error.getMessage());
+        error.printStackTrace();
+
+        if (temp_switch != null) {      //sync failed. go back to old media player
+            mediaPlayer.release();
+            mediaPlayer = temp_switch;
+            temp_switch = null;
+            updateConnectionState(CONNECTION_SUCCESS, false); //old player is connected
+            setSynced(false);
+        } else {
+            updateConnectionState(CONNECTION_FAILED, true);
+        }
     }
 
     //pause when listening
@@ -233,58 +322,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             togglePlayer(!isPaused);
         }
     };
-
-    private Runnable connectionRunnable = new Runnable() {
-        @Override
-        public void run() {
-            try {
-                updateConnectionState(CONNECTION_TRYING, false);
-                URL url = new URL(STREAM_URL);
-                HttpURLConnection ucon = (HttpURLConnection) url.openConnection();
-                String myurl = ucon.getHeaderField("Location");
-                if (!"https".equals(myurl.substring(0, 5)))
-                    myurl = "https" + myurl.substring(4);
-                mediaPlayer.setDataSource(myurl);
-
-                //test link
-//                mediaPlayer.setDataSource("https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3");
-                mediaPlayer.prepare();
-
-                if (temp_switch != null) {      //sync op
-                    temp_switch.release();
-                    temp_switch = null;
-
-                    if(isPaused)
-                        togglePlayer(false); //need to update notification if paused
-                    else
-                        mediaPlayer.start();        //no need to update notification here
-
-                    setSynced(true);
-                    updateConnectionState(CONNECTION_SUCCESS, false);
-
-                } else {
-                    updateConnectionState(CONNECTION_SUCCESS, true);
-                }
-            } catch (IOException | NullPointerException e) {
-                //nullpointerexception if connection redirect fails from substring call
-                Log.i("mylog", "Radio Connection Failed: " + e.getMessage());
-
-                if (temp_switch != null) {      //sync failed. go back to old media player
-                    mediaPlayer.release();
-                    mediaPlayer = temp_switch;
-                    temp_switch = null;
-                    updateConnectionState(CONNECTION_SUCCESS, false); //old player is connected
-                    setSynced(false);
-                } else {
-                    updateConnectionState(CONNECTION_FAILED, true);
-                }
-            }
-        }
-    };
-
-    void connectToRadio() {
-        new Thread(connectionRunnable).start();
-    }
 
     @Nullable
     @Override

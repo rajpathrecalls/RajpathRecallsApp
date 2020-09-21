@@ -12,4 +12,8 @@
         <item name="fontFamily">@font/raleway_medium</item>
     </style>
 
+    <style name="SplashScreenTheme" parent = "Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowBackground">@drawable/splash_screen_background</item>
+    </style>
+
 </resources>
