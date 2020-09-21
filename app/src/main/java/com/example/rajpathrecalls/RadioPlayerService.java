@@ -40,12 +40,10 @@ import java.net.URL;
 
 public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
-    private boolean isPaused = true;
+    private boolean isPaused = true, isInForeground = false;
     private long player_offset = 0, player_offset_start = -1;
     private SimpleExoPlayer mediaPlayer, temp_switch = null;
-    private AudioManager audioManager;
     private int connection_state = CONNECTION_FAILED;
-    private NotificationManagerCompat notificationManager;
     private MediaSessionCompat mediaSession;
 
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
@@ -66,8 +64,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     @Override
     public void onCreate() {
         super.onCreate();
-        notificationManager = NotificationManagerCompat.from(this);
-        audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         mediaPlayer = new SimpleExoPlayer.Builder(this).build();
 
 //        mediaPlayer.setAudioAttributes(
@@ -107,7 +103,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         if (isPaused) {
             int result;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                result = audioManager.requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
+                result = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
+                        requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                         .setAudioAttributes(new AudioAttributes.Builder()
                                 .setUsage(AudioAttributes.USAGE_MEDIA)
                                 .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
@@ -115,7 +112,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                         .setOnAudioFocusChangeListener(this)
                         .build());
             } else {
-                result = audioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
+                result = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
+                        requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
             }
 
             if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
@@ -159,6 +157,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     private void makeNotification() {
+        final int NOTIFICATION_ID = 6;
         Bitmap pic = BitmapFactory.decodeResource(getResources(), R.drawable.notif_album_art);
 
         Intent notifButtonIntent = new Intent(PLAY_PAUSE_ACTION);   //implicit intent
@@ -186,7 +185,12 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 .setProgress(0, 0, true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        notificationManager.notify(1, mBuilder.build());
+        if(isInForeground){
+            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
+        } else {
+            startForeground(NOTIFICATION_ID, mBuilder.build());
+            isInForeground = true;
+        }
     }
 
     private void sendLocalBroadcast(Intent intent) {
@@ -214,7 +218,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     public void onAudioFocusChange(int focusChange) {
         if (focusChange == AudioManager.AUDIOFOCUS_LOSS || focusChange == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
             togglePlayer(true);
-            audioManager.abandonAudioFocus(this);
             mediaSession.setActive(false);
         }
     }
@@ -336,11 +339,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         if (!isPaused) {
             unregisterReceiver(pauseForOutputChange);
         }
-        audioManager.abandonAudioFocus(this);
+        ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(this);
         unregisterReceiver(notifActionReceiver);
         mediaPlayer.release();
         mediaSession.release();
-        notificationManager.cancelAll();
+        NotificationManagerCompat.from(this).cancelAll();
 
         // Destroy the service
         stopSelf();
