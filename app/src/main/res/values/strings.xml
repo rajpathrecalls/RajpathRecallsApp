@@ -13,4 +13,5 @@
     <string name="elapsed_seconds">0 seconds behind livestream</string>
     <string name="elapsed_minutes">0:00 minutes behind livestream</string>
     <string name="connecting_text">Establishing connection…</string>
+    <string name="now_playing_text">Now Playing</string>
 </resources>

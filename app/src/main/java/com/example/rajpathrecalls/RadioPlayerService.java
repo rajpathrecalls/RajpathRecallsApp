@@ -21,6 +21,7 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -34,24 +35,32 @@ import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
-    private boolean isPaused = true, isInForeground = false;
+    private boolean isPaused = true, listenForPlayerReady = false, isPrepared = false;
+    private String now_playing_song = "", now_playing_artist = "";
     private long player_offset = 0, player_offset_start = -1;
     private SimpleExoPlayer mediaPlayer, temp_switch = null;
     private int connection_state = CONNECTION_FAILED;
     private MediaSessionCompat mediaSession;
+    private Timer scraper_timer;
 
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
             PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause";        //public broadcasts action, so need unique
 
     static final int CONNECTION_SUCCESS = 1, CONNECTION_TRYING = 2, CONNECTION_FAILED = 3;
-    static final String PLAY_PAUSE_BROADCAST = "playpause", CONNECTION_BROADCAST = "connectionupdate",
-            SYNC_BROADCAST = "sync_update";     //local broadcast actions
+    static final String PLAY_PAUSE_BROADCAST = "playpause", CONNECTION_BROADCAST = "connection_update",
+            SYNC_BROADCAST = "sync_update", NOW_PLAYING_BROADCAST = "now_playing";     //local broadcast actions
 
     public class LocalBinder extends Binder {
         public RadioPlayerService getService() {
@@ -66,13 +75,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         super.onCreate();
         mediaPlayer = new SimpleExoPlayer.Builder(this).build();
 
-//        mediaPlayer.setAudioAttributes(
-//                new AudioAttributes.Builder()
-//                .setUsage(AudioAttributes.USAGE_MEDIA)
-//                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-//                .build()
-//        );
-
         mediaSession = new MediaSessionCompat(this, CHANNEL_ID);
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
@@ -85,7 +87,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             }
         });
 
-        connectToRadio();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
             CharSequence name = getResources().getString(R.string.app_name);// The user-visible name of the channel.
@@ -105,12 +106,12 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 result = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
                         requestAudioFocus(new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                        .setAudioAttributes(new AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_MEDIA)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .build())
-                        .setOnAudioFocusChangeListener(this)
-                        .build());
+                                .setAudioAttributes(new AudioAttributes.Builder()
+                                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                                        .build())
+                                .setOnAudioFocusChangeListener(this)
+                                .build());
             } else {
                 result = ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).
                         requestAudioFocus(this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
@@ -128,9 +129,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             mediaPlayer.pause();
             player_offset_start = System.currentTimeMillis();
             unregisterReceiver(pauseForOutputChange);
+            scraper_timer.cancel();
             setPaused(true);
         }
-        makeNotification();
+        makeNotification(true);
     }
 
     void syncToRadio() {
@@ -147,16 +149,28 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return isPaused;
     }
 
+    boolean isPrepared(){
+        return isPrepared;
+    }
+
     int getPlayerOffset() {
         return (int) player_offset;
     }
 
-    private void updatePlayerOffset() {
-        if (player_offset_start != -1)
-            player_offset += (System.currentTimeMillis() - player_offset_start) / 1000;
+    String[] getNowPlaying() {
+        return new String[]{now_playing_song, now_playing_artist};
     }
 
-    private void makeNotification() {
+    private void updatePlayerOffset() {
+        if (player_offset_start != -1) {
+            long calculated_offset = (System.currentTimeMillis() - player_offset_start) / 1000;
+            if (calculated_offset == 0)
+                calculated_offset = 1;      //quick pause play taps give one second offset
+            player_offset += calculated_offset;
+        }
+    }
+
+    private void makeNotification(boolean updateService) {
         final int NOTIFICATION_ID = 6;
         Bitmap pic = BitmapFactory.decodeResource(getResources(), R.drawable.notif_album_art);
 
@@ -170,8 +184,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_notif)
-                .setContentTitle("Lorem Ipsum")
-                .setContentText("Lorem ipsum dolor sit amet")
+                .setContentTitle(now_playing_song)
+                .setContentText(now_playing_artist)
                 .setLargeIcon(pic)
                 .setOngoing(!isPaused)
                 .setShowWhen(false)
@@ -185,11 +199,16 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 .setProgress(0, 0, true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        if(isInForeground){
-            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
+        if(updateService){
+            if(isPaused){
+                //update notification and set as not foreground
+                NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
+                stopForeground(false);
+            } else {
+                startForeground(NOTIFICATION_ID, mBuilder.build());
+            }
         } else {
-            startForeground(NOTIFICATION_ID, mBuilder.build());
-            isInForeground = true;
+            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
         }
     }
 
@@ -265,6 +284,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
                 mediaPlayer.setMediaSource(source);
                 mediaPlayer.addListener(RadioPlayerService.this);
+                listenForPlayerReady = true;
                 mediaPlayer.prepare();
             }
         });
@@ -274,20 +294,27 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     @Override
     public void onPlaybackStateChanged(int state) {
 
-        if (state == SimpleExoPlayer.STATE_READY) {
+        if (listenForPlayerReady && state == SimpleExoPlayer.STATE_READY) {
+            listenForPlayerReady = false;
+            scraper_timer = new Timer();
+            scraper_timer.scheduleAtFixedRate(createScraperTask(), 0, 30000);  //call every 30 seconds
+
             if (temp_switch != null) {      //sync op
                 temp_switch.release();
                 temp_switch = null;
                 if (isPaused)
-                    togglePlayer(false); //need to update notification if paused
+                    togglePlayer(false); //need to update isPaused
                 else
-                    mediaPlayer.play();        //no need to update notification here
+                    mediaPlayer.play();        //no need to update
 
                 setSynced(true);
                 updateConnectionState(CONNECTION_SUCCESS, false);
-
             } else {
                 updateConnectionState(CONNECTION_SUCCESS, true);
+                if(!isPrepared){
+                    togglePlayer(false);
+                    isPrepared = true;
+                }
             }
         }
     }
@@ -326,6 +353,36 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         }
     };
 
+    private TimerTask createScraperTask() {
+        return new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    Document document = Jsoup.connect("https://zeno.fm/rajpath-recalls/").get();
+                    Elements song_element = document.getElementsByClass("radio-song"),
+                            artist_element = document.getElementsByClass("radio-artist ");
+
+                    String song_name = song_element.size() > 0 ? song_element.get(0).text() : "",
+                            artist_name = artist_element.size() > 0 ? artist_element.get(0).text() : "";
+
+                    if (!song_name.equals(now_playing_song) || !artist_name.equals(now_playing_artist)) {
+                        updateNowPlaying(song_name, artist_name);
+                    }
+                } catch (IOException ignored) {}
+            }
+        };
+    }
+
+    private void updateNowPlaying(@NonNull final String song, @NonNull final String artist) {
+        now_playing_song = song;
+        now_playing_artist = artist;
+        makeNotification(false);
+        Intent intent = new Intent(NOW_PLAYING_BROADCAST);
+        intent.putExtra("song", song);
+        intent.putExtra("artist", artist);
+        sendLocalBroadcast(intent);
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -343,9 +400,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         unregisterReceiver(notifActionReceiver);
         mediaPlayer.release();
         mediaSession.release();
-        NotificationManagerCompat.from(this).cancelAll();
+
+        if (scraper_timer != null)
+            scraper_timer.cancel();
 
         // Destroy the service
-        stopSelf();
+        stopSelf();     //will destroy notification also
     }
 }
