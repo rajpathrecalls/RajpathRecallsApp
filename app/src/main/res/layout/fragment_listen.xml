@@ -89,19 +89,23 @@
 
     <TextSwitcher
         android:id="@+id/song_name_view"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
+        android:layout_marginEnd="30dp"
         android:alpha="0"
         app:layout_constraintBottom_toTopOf="@+id/artist_name_view"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/now_playing_title"
-        app:layout_constraintTop_toBottomOf="@+id/now_playing_title" >
+        app:layout_constraintTop_toBottomOf="@+id/now_playing_title">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#cccccc"
             android:textSize="20sp" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -111,24 +115,43 @@
 
     <TextSwitcher
         android:id="@+id/artist_name_view"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:alpha="0"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/sync_warning"
+        app:layout_constraintEnd_toEndOf="@+id/song_name_view"
         app:layout_constraintStart_toStartOf="@+id/song_name_view"
         app:layout_constraintTop_toBottomOf="@id/song_name_view">
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#cccccc"
             android:textSize="20sp" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#cccccc"
             android:textSize="20sp" />
     </TextSwitcher>
+
+    <TextView
+        android:id="@+id/sync_warning"
+        android:layout_width="0dp"
+        android:visibility="gone"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:drawablePadding="5dp"
+        android:drawableTint="#ffcccc"
+        android:text="@string/sync_warning_text"
+        android:textColor="#ffcccc"
+        app:drawableStartCompat="@drawable/exclamation_vector"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/artist_name_view"
+        app:layout_constraintStart_toStartOf="@+id/now_playing_title"
+        app:layout_constraintTop_toBottomOf="@+id/artist_name_view" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

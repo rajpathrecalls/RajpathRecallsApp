@@ -31,11 +31,11 @@ import com.google.android.material.snackbar.Snackbar;
 public class ListenFragment extends Fragment {
 
     private ImageView play_pause_btn;
-    private TextView offset_text;
+    private TextView offset_text, sync_warning;
     private Button sync_button;
     private ProgressBar sync_progress;
     private TextSwitcher now_song_view, now_artist_view;
-    private boolean nowPlayingActive = false;
+    private boolean nowPlayingStarted = false;
 
     private MediaPlayer bg_player = null;
 
@@ -72,6 +72,8 @@ public class ListenFragment extends Fragment {
             }
         });
 
+        sync_warning = fragmentView.findViewById(R.id.sync_warning);
+
         now_song_view = fragmentView.findViewById(R.id.song_name_view);
         now_song_view.setInAnimation(getContext(), android.R.anim.slide_in_left);
         now_song_view.setOutAnimation(getContext(), android.R.anim.slide_out_right);
@@ -104,7 +106,6 @@ public class ListenFragment extends Fragment {
 
             if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
                 getRadioPlayer().togglePlayer(!getRadioPlayer().isPaused());
-
             }
         }
     };
@@ -136,12 +137,10 @@ public class ListenFragment extends Fragment {
                     artist_name = intent.getStringExtra("artist");
 
             if (song_name != null && artist_name != null) {
-                if (nowPlayingActive) {
+                if (nowPlayingStarted)
                     updateNowPlayingViews(song_name, artist_name);
-                } else {
+                else
                     startNowPlayingViews(song_name, artist_name);
-                    nowPlayingActive = true;
-                }
             }
         }
     };
@@ -178,6 +177,7 @@ public class ListenFragment extends Fragment {
             sync_button.setText(R.string.sync_text);
             sync_button.setVisibility(View.VISIBLE);
             sync_progress.setVisibility(View.GONE);
+            sync_warning.setVisibility(View.VISIBLE);
 
         } else if (sync_state == 1) {      //sync progress
             offset_text.setVisibility(View.GONE);
@@ -189,6 +189,7 @@ public class ListenFragment extends Fragment {
             offset_text.setVisibility(View.GONE);
             sync_button.setVisibility(View.GONE);
             sync_progress.setVisibility(View.GONE);
+            sync_warning.setVisibility(View.GONE);
         }
     }
 
@@ -206,6 +207,7 @@ public class ListenFragment extends Fragment {
                 setDuration(animation_duration);
         now_artist_view.animate().alpha(1f).translationX(0).setStartDelay(animation_duration + animation_duration).
                 setDuration(animation_duration);
+        nowPlayingStarted = true;
     }
 
     private void updateNowPlayingViews(String song, String artist) {
@@ -244,7 +246,11 @@ public class ListenFragment extends Fragment {
         else
             updateSyncViews(2);  //disable sync views
 
-        updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
+        //on closing and reopening fragment
+        if(nowPlayingStarted)
+            updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
+        else if(player.isPrepared())
+            startNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
     }
 
     @Override
