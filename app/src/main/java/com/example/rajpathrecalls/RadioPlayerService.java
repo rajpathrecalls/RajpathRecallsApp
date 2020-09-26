@@ -302,13 +302,15 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             if (temp_switch != null) {      //sync op
                 temp_switch.release();
                 temp_switch = null;
+
+                updateConnectionState(CONNECTION_SUCCESS, false);
+                setSynced(true);
+
                 if (isPaused)
                     togglePlayer(false); //need to update isPaused
                 else
                     mediaPlayer.play();        //no need to update
 
-                setSynced(true);
-                updateConnectionState(CONNECTION_SUCCESS, false);
             } else {
                 updateConnectionState(CONNECTION_SUCCESS, true);
                 if(!isPrepared){
@@ -359,7 +361,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             public void run() {
                 try {
                     Document document = Jsoup.connect("https://zeno.fm/rajpath-recalls/").get();
-                    Elements song_element = document.getElementsByClass("radio-song"),
+                    Elements song_element = document.getElementsByClass("radio-song "),
                             artist_element = document.getElementsByClass("radio-artist ");
 
                     String song_name = song_element.size() > 0 ? song_element.get(0).text() : "",
