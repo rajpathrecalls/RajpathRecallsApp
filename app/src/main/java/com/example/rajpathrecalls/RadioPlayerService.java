@@ -392,21 +392,21 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     @Override
-    public void onTaskRemoved(Intent rootIntent) {
-        super.onTaskRemoved(rootIntent);
-        // Handle application closing
+    public void onDestroy() {
+        super.onDestroy();
+
         if (!isPaused) {
             unregisterReceiver(pauseForOutputChange);
         }
+
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(this);
         unregisterReceiver(notifActionReceiver);
+        if(temp_switch != null)
+            temp_switch.release();
         mediaPlayer.release();
         mediaSession.release();
 
         if (scraper_timer != null)
             scraper_timer.cancel();
-
-        // Destroy the service
-        stopSelf();     //will destroy notification also
     }
 }
