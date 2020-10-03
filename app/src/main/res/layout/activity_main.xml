@@ -3,11 +3,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#000000"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_nav_bar"
-        android:paddingVertical="5dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:itemIconTint="@color/navbar_item_color"
@@ -15,8 +15,8 @@
         android:background="@color/colorPrimaryDark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:itemTextAppearanceActive="@style/RalewayMediumAppearance"
-        app:itemTextAppearanceInactive="@style/RalewayMediumAppearance"
+        app:itemTextAppearanceActive="@style/NavLabelAppearanceActive"
+        app:itemTextAppearanceInactive="@style/NavLabelAppearanceInactive"
         app:menu="@menu/bottom_nav_menu" />
 
     <FrameLayout
@@ -25,8 +25,6 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toTopOf="@id/bottom_nav_bar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-    </FrameLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

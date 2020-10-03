@@ -1,4 +1,4 @@
-package com.example.rajpathrecalls;
+package com.nitc.rajpathrecalls;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -54,6 +54,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     private int connection_state = CONNECTION_FAILED;
     private MediaSessionCompat mediaSession;
     private Timer scraper_timer;
+    private Handler sleep_handler;
+    private long sleep_end_time;
 
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
             PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause";        //public broadcasts action, so need unique
@@ -141,6 +143,27 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         connectToRadio();
     }
 
+    void startSleepTimer(int minutes_to_sleep){
+        sleep_handler = new Handler();
+
+        sleep_handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                togglePlayer(true);     //will remove from foreground
+                stopSleepTimer();
+            }
+        }, minutes_to_sleep * 60 * 1000);
+
+        sleep_end_time = System.currentTimeMillis() + minutes_to_sleep * 60 * 1000;
+    }
+
+    void stopSleepTimer(){
+        if(sleep_handler != null){
+            sleep_handler.removeCallbacksAndMessages(null);
+            sleep_handler = null;
+        }
+    }
+
     int getConnectionState() {
         return connection_state;
     }
@@ -153,8 +176,16 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return isPrepared;
     }
 
+    boolean isSleepTimer(){
+        return sleep_handler != null;
+    }
+
     int getPlayerOffset() {
         return (int) player_offset;
+    }
+
+    long getSleepEndTime(){
+        return sleep_end_time;
     }
 
     String[] getNowPlaying() {
@@ -399,6 +430,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             unregisterReceiver(pauseForOutputChange);
         }
 
+        stopSleepTimer();
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(this);
         unregisterReceiver(notifActionReceiver);
         if(temp_switch != null)

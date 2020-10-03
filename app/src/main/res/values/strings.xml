@@ -15,4 +15,18 @@
     <string name="connecting_text">Establishing connection…</string>
     <string name="now_playing_text">Now Playing</string>
     <string name="sync_warning_text">Sync to livestream to get now playing updates</string>
+    <string name="more_menu_title">More</string>
+    <string name="preferences_text">Preferences</string>
+    <string name="video_setting_text">Background Video</string>
+    <string name="sleep_timer_setting">Sleep Timer</string>
+    <string name="contact_us_text">Contact Us</string>
+    <string name="instagram_text">Instagram</string>
+    <string name="facebook_text">Facebook</string>
+    <string name="mail_text">Mail</string>
+    <string name="about_text">About</string>
+    <string name="build_version_text">Build Version</string>
+    <string name="contribute_text">Contribute</string>
+    <string name="sleep_timer_remaining_time">Stopping playback in 0 minutes</string>
+    <string name="okay_text">OKAY</string>
+    <string name="cancel_text">CANCEL</string>
 </resources>

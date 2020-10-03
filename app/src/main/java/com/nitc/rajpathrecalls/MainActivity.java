@@ -1,4 +1,4 @@
-package com.example.rajpathrecalls;
+package com.nitc.rajpathrecalls;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -52,6 +52,8 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             radioPlayerService = binder.getService();
             if(current_fragment instanceof ListenFragment)
                 ((ListenFragment) current_fragment).updateViewsOnResume();
+            else if(current_fragment instanceof MoreFragment)
+                ((MoreFragment) current_fragment).updateViewsOnResume();
         }
 
         @Override
@@ -108,23 +110,32 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        Fragment selected = null;
+        Fragment selected;
 
         switch(item.getItemId()){
+            default:
             case R.id.nav_listen:
                 selected = new ListenFragment();
                 break;
             case R.id.nav_schedule:
                 selected = new ScheduleFragment();
                 break;
+            case R.id.nav_more:
+                selected = new MoreFragment();
+                break;
         }
-        goToFragment(selected);
+        if(!selected.getClass().equals(current_fragment.getClass())) {
+            goToFragment(selected);
+        }
         return true;
     }
 
     void goToFragment(Fragment fragment){
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                fragment).commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
 
     @Override

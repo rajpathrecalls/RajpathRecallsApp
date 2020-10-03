@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/colorPrimaryBG"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layoutAnimation="@anim/layout_anim_pop_in"
+        android:padding="20dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:src="@drawable/splash_image"
+            android:contentDescription="@string/app_name" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/preferences_text"
+            android:layout_marginTop="40dp"
+            android:textSize="16sp"
+            android:textColor="@color/colorPrimary"
+            android:fontFamily="@font/raleway_bold" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/background_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:text="@string/video_setting_text"
+            android:textColor="@color/colorPrimary"
+            android:textSize="15sp"
+            app:trackTint="@color/switch_track_color" />
+
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="10dp"-->
+<!--            android:text="Extras"-->
+<!--            android:textSize="16sp"-->
+<!--            android:textColor="@color/colorPrimary"-->
+<!--            android:fontFamily="@font/raleway_bold" />-->
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/timer_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            app:trackTint="@color/switch_track_color"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginStart="1dp"
+            android:text="@string/sleep_timer_setting" />
+
+        <TextView
+            android:id="@+id/timer_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:alpha="0"
+            android:textColor="@color/subTextColor"
+            android:textSize="12sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/contact_us_text"
+            android:textSize="16sp"
+            android:textColor="@color/colorPrimary"
+            android:fontFamily="@font/raleway_bold" />
+
+        <TextView
+            android:id="@+id/instagram_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/instagram_text"
+            app:drawableRightCompat="@drawable/ic_instagram" />
+
+        <TextView
+            android:id="@+id/facebook_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/facebook_text"
+            app:drawableRightCompat="@drawable/ic_facebook" />
+
+        <TextView
+            android:id="@+id/mail_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/mail_text"
+            app:drawableRightCompat="@drawable/ic_mail" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/about_text"
+            android:textSize="16sp"
+            android:textColor="@color/colorPrimary"
+            android:fontFamily="@font/raleway_bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:layout_marginTop="1dp"
+            android:textColor="@color/colorPrimary"
+            android:layout_marginStart="1dp"
+            android:text="@string/build_version_text" />
+
+        <TextView
+            android:id="@+id/version_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:textColor="@color/subTextColor"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/github_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/contribute_text"
+            app:drawableRightCompat="@drawable/ic_github" />
+    </LinearLayout>
+
+</ScrollView>
+

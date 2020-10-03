@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@color/colorPrimaryBG"
     tools:context=".MainActivity">
 
     <VideoView
@@ -30,7 +30,7 @@
         app:layout_constraintVertical_bias="0.8"
         app:layout_constraintVertical_chainStyle="packed"
         app:srcCompat="@drawable/ic_play"
-        app:tint="#000000" />
+        app:tint="@color/colorPrimaryBG" />
 
     <TextView
         android:id="@+id/offset_text"

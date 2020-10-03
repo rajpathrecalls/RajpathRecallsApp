@@ -1,4 +1,4 @@
-package com.example.rajpathrecalls;
+package com.nitc.rajpathrecalls;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -18,6 +18,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
@@ -46,34 +47,42 @@ public class ListenFragment extends Fragment {
         View fragmentView = inflater.inflate(R.layout.fragment_listen, container, false);
         ((MainActivity) getContext()).current_fragment = this;
 
+        boolean background_video_on = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
+                getBoolean("background_video_on", true);
         final VideoView background_video = fragmentView.findViewById(R.id.videoView);
-        background_video.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
-                + "/" + R.raw.bg_video));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            background_video.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE);
-        }
-        background_video.start();
-        background_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mp) {
-                bg_player = mp;
-                bg_player.setLooping(true);
-                bg_player.setVolume(0, 0);
-                bg_player.start();
+        if(background_video_on) {
+            background_video.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
+                    + "/" + R.raw.bg_video));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                background_video.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE);
             }
-        });
+            background_video.start();
+            background_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    bg_player = mp;
+                    bg_player.setLooping(true);
+                    bg_player.setVolume(0, 0);
+                    bg_player.start();
+                }
+            });
 
-        background_video.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mp, int what, int extra) {
-                background_video.setVisibility(View.GONE);
-                bg_player = null;
-                return true;
-            }
-        });
+            background_video.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    background_video.setVisibility(View.GONE);
+                    getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().
+                            putBoolean("background_video_on", false).apply();
+                    Toast.makeText(getContext(), "Canvas isn't supported on this device :(", Toast.LENGTH_SHORT).show();
+                    bg_player = null;
+                    return true;
+                }
+            });
+        } else {
+            background_video.setVisibility(View.GONE);
+        }
 
         sync_warning = fragmentView.findViewById(R.id.sync_warning);
-
         now_song_view = fragmentView.findViewById(R.id.song_name_view);
         now_song_view.setInAnimation(getContext(), android.R.anim.slide_in_left);
         now_song_view.setOutAnimation(getContext(), android.R.anim.slide_out_right);
@@ -150,9 +159,7 @@ public class ListenFragment extends Fragment {
         updateSyncViews(isSyncSuccess ? 2 : 0);
     }
 
-
     private void updatePlayPauseView(boolean isPaused) {
-        //TODO animate view change
         play_pause_btn.setImageResource(isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
     }
 
@@ -237,7 +244,7 @@ public class ListenFragment extends Fragment {
         }
     }
 
-    //called after service is bound
+    //also called after service is bound
     void updateViewsOnResume() {
         RadioPlayerService player = getRadioPlayer();
         updatePlayPauseView(player.isPaused());

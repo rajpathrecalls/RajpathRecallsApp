@@ -1,4 +1,4 @@
-package com.example.rajpathrecalls;
+package com.nitc.rajpathrecalls;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
