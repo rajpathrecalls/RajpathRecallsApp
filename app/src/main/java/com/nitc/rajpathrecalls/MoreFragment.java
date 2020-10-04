@@ -110,7 +110,10 @@ public class MoreFragment extends Fragment {
         slider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                String text = "Stop playback in " + (int)(value) + " minute" + (value > 2f ? "s":"");
+                String text = getString(R.string.sleep_dialog_title).replace("30", ""+(int)value);
+                if(value < 2f){
+                    text = text.substring(0, text.length() - 1);
+                }
                 title.setText(text);
             }
         });
