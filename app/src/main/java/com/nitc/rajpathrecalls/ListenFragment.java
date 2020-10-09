@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -32,10 +33,10 @@ import com.google.android.material.snackbar.Snackbar;
 public class ListenFragment extends Fragment {
 
     private ImageView play_pause_btn;
-    private TextView offset_text, sync_warning;
+    private TextView offset_text, now_playing_title;
     private Button sync_button;
     private ProgressBar sync_progress;
-    private TextSwitcher now_song_view, now_artist_view;
+    private TextSwitcher now_song_view;
     private boolean nowPlayingStarted = false;
 
     private MediaPlayer bg_player = null;
@@ -49,6 +50,7 @@ public class ListenFragment extends Fragment {
 
         boolean background_video_on = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
                 getBoolean("background_video_on", true);
+
         final VideoView background_video = fragmentView.findViewById(R.id.videoView);
         if(background_video_on) {
             background_video.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
@@ -78,18 +80,15 @@ public class ListenFragment extends Fragment {
                     return true;
                 }
             });
+
         } else {
             background_video.setVisibility(View.GONE);
         }
 
-        sync_warning = fragmentView.findViewById(R.id.sync_warning);
+        now_playing_title = fragmentView.findViewById(R.id.now_playing_title);
         now_song_view = fragmentView.findViewById(R.id.song_name_view);
         now_song_view.setInAnimation(getContext(), android.R.anim.slide_in_left);
         now_song_view.setOutAnimation(getContext(), android.R.anim.slide_out_right);
-
-        now_artist_view = fragmentView.findViewById(R.id.artist_name_view);
-        now_artist_view.setInAnimation(getContext(), android.R.anim.slide_in_left);
-        now_artist_view.setOutAnimation(getContext(), android.R.anim.slide_out_right);
 
         play_pause_btn = fragmentView.findViewById(R.id.play_pause_view);
         offset_text = fragmentView.findViewById(R.id.offset_text);
@@ -100,6 +99,9 @@ public class ListenFragment extends Fragment {
         sync_button.setOnClickListener(onSyncClick);
 
         updatePlayPauseView(true);
+
+        EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list), null);
+        e.populate();
 
         return fragmentView;
     }
@@ -184,7 +186,7 @@ public class ListenFragment extends Fragment {
             sync_button.setText(R.string.sync_text);
             sync_button.setVisibility(View.VISIBLE);
             sync_progress.setVisibility(View.GONE);
-            sync_warning.setVisibility(View.VISIBLE);
+            now_playing_title.setEnabled(true);     //show exclamation
 
         } else if (sync_state == 1) {      //sync progress
             offset_text.setVisibility(View.GONE);
@@ -196,30 +198,26 @@ public class ListenFragment extends Fragment {
             offset_text.setVisibility(View.GONE);
             sync_button.setVisibility(View.GONE);
             sync_progress.setVisibility(View.GONE);
-            sync_warning.setVisibility(View.GONE);
+            now_playing_title.setEnabled(false);
         }
     }
 
     private void startNowPlayingViews(String song, String artist) {
         final int animation_duration = 450;
-        now_song_view.setCurrentText(song);
-        now_artist_view.setCurrentText(artist);
-        TextView now_title = ((ViewGroup)now_song_view.getParent()).findViewById(R.id.now_playing_title);
-        now_song_view.setX(-now_song_view.getWidth());
-        now_artist_view.setX(-now_artist_view.getWidth());
-        now_title.setX(-now_title.getWidth());
+        now_song_view.setCurrentText(song + " - " +artist);
+        now_song_view.setSelected(true);    //to start marquee
 
-        now_title.animate().alpha(1f).translationX(0).setDuration(animation_duration);
+        now_song_view.setX(-now_song_view.getWidth());
+        now_playing_title.setX(-now_playing_title.getWidth());
+
+        now_playing_title.animate().alpha(1f).translationX(0).setDuration(animation_duration);
         now_song_view.animate().alpha(1f).translationX(0).setStartDelay(animation_duration).
-                setDuration(animation_duration);
-        now_artist_view.animate().alpha(1f).translationX(0).setStartDelay(animation_duration + animation_duration).
                 setDuration(animation_duration);
         nowPlayingStarted = true;
     }
 
     private void updateNowPlayingViews(String song, String artist) {
-        now_song_view.setText(song);
-        now_artist_view.setText(artist);
+        now_song_view.setText(song + " - " +artist);
     }
 
     @Override

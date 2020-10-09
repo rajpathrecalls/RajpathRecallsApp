@@ -14,7 +14,6 @@
     <string name="elapsed_minutes">0:00 minutes behind livestream</string>
     <string name="connecting_text">Establishing connection…</string>
     <string name="now_playing_text">Now Playing</string>
-    <string name="sync_warning_text">Sync to livestream to get now playing updates</string>
     <string name="more_menu_title">More</string>
     <string name="preferences_text">Preferences</string>
     <string name="video_setting_text">Background Video</string>
@@ -30,4 +29,5 @@
     <string name="okay_text">OKAY</string>
     <string name="cancel_text">CANCEL</string>
     <string name="sleep_dialog_title">Stop playback in 30 minutes</string>
+    <string name="coming_up_title">Coming Up Today</string>
 </resources>

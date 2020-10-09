@@ -20,15 +20,13 @@
         android:layout_width="70dp"
         android:layout_height="70dp"
         android:layout_gravity="center"
-        android:background="@drawable/circle_bg"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/playpause_bg"
         android:contentDescription="@string/pause_play_content_descrip"
         android:padding="10dp"
-        app:layout_constraintBottom_toTopOf="@+id/sync_button"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.8"
-        app:layout_constraintVertical_chainStyle="packed"
         app:srcCompat="@drawable/ic_play"
         app:tint="@color/colorPrimaryBG" />
 
@@ -38,8 +36,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         android:text="@string/elapsed_minutes"
-        android:textColor="@color/colorPrimary"
         android:visibility="gone"
+        android:textColor="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="@+id/sync_button"
         app:layout_constraintEnd_toStartOf="@+id/sync_button"
         app:layout_constraintHorizontal_bias="0.5"
@@ -51,11 +49,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
-        android:text="@string/sync_text"
         android:backgroundTint="@color/sync_button_background"
+        android:text="@string/sync_text"
         android:textColor="@color/colorPrimaryDark"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/sync_progress"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/offset_text"
@@ -66,94 +63,118 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/sync_button"
         app:layout_constraintEnd_toEndOf="parent"
+        android:visibility="gone"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/sync_button"
         app:layout_constraintTop_toTopOf="@+id/sync_button" />
 
     <TextView
         android:id="@+id/now_playing_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="30dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="5dp"
         android:alpha="0"
+        android:drawablePadding="5dp"
         android:fontFamily="@font/raleway_medium"
         android:text="@string/now_playing_text"
         android:textColor="@color/colorPrimary"
-        android:textSize="25sp"
+        android:textSize="20sp"
+        app:drawableEndCompat="@drawable/exclamation_drawable"
+        app:drawableTint="@color/now_playing_drawable_color"
         app:layout_constraintBottom_toTopOf="@+id/song_name_view"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.2"
-        app:layout_constraintVertical_chainStyle="packed" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <TextSwitcher
         android:id="@+id/song_name_view"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="30dp"
         android:alpha="0"
-        app:layout_constraintBottom_toTopOf="@+id/artist_name_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/now_playing_title"
-        app:layout_constraintTop_toBottomOf="@+id/now_playing_title">
+        app:layout_constraintBottom_toTopOf="@+id/play_pause_view"
+        app:layout_constraintEnd_toEndOf="@+id/now_playing_title"
+        app:layout_constraintStart_toStartOf="@+id/now_playing_title">
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
             android:textColor="@color/subTextColor"
-            android:textSize="20sp" />
+            android:textSize="18sp"
+            android:singleLine="true" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
             android:textColor="@color/subTextColor"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
     </TextSwitcher>
 
-    <TextSwitcher
-        android:id="@+id/artist_name_view"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="5dp"
-        android:alpha="0"
-        app:layout_constraintBottom_toTopOf="@id/sync_warning"
-        app:layout_constraintEnd_toEndOf="@+id/song_name_view"
-        app:layout_constraintStart_toStartOf="@+id/song_name_view"
-        app:layout_constraintTop_toBottomOf="@id/song_name_view">
+<!--    <TextSwitcher-->
+<!--        android:id="@+id/artist_name_view"-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_marginBottom="30dp"-->
+<!--        android:alpha="0"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/play_pause_view"-->
+<!--        app:layout_constraintEnd_toEndOf="@+id/song_name_view"-->
+<!--        app:layout_constraintStart_toStartOf="@+id/song_name_view">-->
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/subTextColor"
-            android:textSize="20sp" />
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textColor="@color/subTextColor"-->
+<!--            android:textSize="18sp" />-->
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/subTextColor"
-            android:textSize="20sp" />
-    </TextSwitcher>
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:textColor="@color/subTextColor"-->
+<!--            android:textSize="18sp" />-->
+<!--    </TextSwitcher>-->
 
     <TextView
-        android:id="@+id/sync_warning"
-        android:layout_width="0dp"
-        android:visibility="gone"
+        android:id="@+id/coming_up_title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:fontFamily="@font/raleway_medium"
+        android:text="@string/coming_up_title"
+        android:textColor="@color/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="@+id/scrollView2"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ScrollView
+        android:id="@+id/scrollView2"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
         android:layout_marginTop="10dp"
-        android:drawablePadding="5dp"
-        android:text="@string/sync_warning_text"
-        app:drawableTint="#ffcccc"
-        android:textColor="#ffcccc"
-        app:drawableStartCompat="@drawable/exclamation_vector"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/artist_name_view"
-        app:layout_constraintStart_toStartOf="@+id/now_playing_title"
-        app:layout_constraintTop_toBottomOf="@+id/artist_name_view" />
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="90dp"
+        android:fadingEdgeLength="30dp"
+        android:requiresFadingEdge="vertical"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@+id/now_playing_title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/coming_up_title">
+
+        <LinearLayout
+            android:id="@+id/event_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
