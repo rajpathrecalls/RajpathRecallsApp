@@ -36,8 +36,8 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="5dp"
         android:text="@string/elapsed_minutes"
-        android:visibility="gone"
         android:textColor="@color/colorPrimary"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/sync_button"
         app:layout_constraintEnd_toStartOf="@+id/sync_button"
         app:layout_constraintHorizontal_bias="0.5"
@@ -63,9 +63,9 @@
         style="?android:attr/progressBarStyle"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/sync_button"
         app:layout_constraintEnd_toEndOf="parent"
-        android:visibility="gone"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/sync_button"
         app:layout_constraintTop_toTopOf="@+id/sync_button" />
@@ -74,8 +74,8 @@
         android:id="@+id/now_playing_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="30dp"
-        android:layout_marginEnd="30dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="5dp"
         android:alpha="0"
         android:drawablePadding="5dp"
@@ -104,9 +104,9 @@
             android:layout_height="wrap_content"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
+            android:singleLine="true"
             android:textColor="@color/subTextColor"
-            android:textSize="18sp"
-            android:singleLine="true" />
+            android:textSize="18sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -118,63 +118,39 @@
             android:textSize="18sp" />
     </TextSwitcher>
 
-<!--    <TextSwitcher-->
-<!--        android:id="@+id/artist_name_view"-->
-<!--        android:layout_width="0dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginBottom="30dp"-->
-<!--        android:alpha="0"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/play_pause_view"-->
-<!--        app:layout_constraintEnd_toEndOf="@+id/song_name_view"-->
-<!--        app:layout_constraintStart_toStartOf="@+id/song_name_view">-->
-
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:textColor="@color/subTextColor"-->
-<!--            android:textSize="18sp" />-->
-
-<!--        <TextView-->
-<!--            android:layout_width="match_parent"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:textColor="@color/subTextColor"-->
-<!--            android:textSize="18sp" />-->
-<!--    </TextSwitcher>-->
-
     <TextView
         android:id="@+id/coming_up_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
+        android:layout_marginBottom="10dp"
         android:fontFamily="@font/raleway_medium"
         android:text="@string/coming_up_title"
         android:textColor="@color/colorPrimary"
         android:textSize="20sp"
-        app:layout_constraintStart_toStartOf="@+id/scrollView2"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@+id/scrollView2"
+        app:layout_constraintStart_toStartOf="@+id/now_playing_title"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
 
-    <ScrollView
+    <HorizontalScrollView
         android:id="@+id/scrollView2"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="10dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="90dp"
-        android:fadingEdgeLength="30dp"
-        android:requiresFadingEdge="vertical"
+        android:layout_height="wrap_content"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@+id/now_playing_title"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/coming_up_title">
 
         <LinearLayout
+            android:paddingStart="20dp"
+            android:paddingEnd="0dp"
             android:id="@+id/event_list"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
