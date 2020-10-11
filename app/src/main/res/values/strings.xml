@@ -25,11 +25,13 @@
     <string name="about_text">About</string>
     <string name="build_version_text">Build Version</string>
     <string name="contribute_text">Contribute</string>
+    <string name="share_text">Share</string>
     <string name="sleep_timer_remaining_time">Stopping playback in 0 minutes</string>
     <string name="okay_text">OKAY</string>
-    <string name="cancel_text">CANCEL</string>
+    <string name="cancel_text">@android:string/cancel</string>
     <string name="sleep_dialog_title">Stop playback in 30 minutes</string>
     <string name="coming_up_title">Coming Up Today</string>
     <string name="empty_schedule_text">There are no scheduled events at the moment. Feel free to listen
         to some great tunes while you wait. Tap here to dismiss this message.</string>
+    <string name="share_intent_message">Hey! I\'ve been listening to Rajpath RECalls. You can check it out at rajpathrecalls.github.io/Beta or get the app at play.google.com</string>
 </resources>

@@ -39,15 +39,6 @@
             android:textSize="15sp"
             app:trackTint="@color/switch_track_color" />
 
-<!--        <TextView-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_marginTop="10dp"-->
-<!--            android:text="Extras"-->
-<!--            android:textSize="16sp"-->
-<!--            android:textColor="@color/colorPrimary"-->
-<!--            android:fontFamily="@font/raleway_bold" />-->
-
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/timer_switch"
             android:layout_width="match_parent"
@@ -149,6 +140,21 @@
             android:textSize="12sp" />
 
         <TextView
+            android:id="@+id/share_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="15sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/share_text"
+            app:drawableRightCompat="@drawable/ic_share" />
+
+        <TextView
             android:id="@+id/github_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -162,6 +168,7 @@
             android:textColor="@color/colorPrimary"
             android:text="@string/contribute_text"
             app:drawableRightCompat="@drawable/ic_github" />
+
     </LinearLayout>
 
 </ScrollView>

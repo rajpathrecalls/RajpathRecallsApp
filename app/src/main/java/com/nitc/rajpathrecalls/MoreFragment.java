@@ -64,6 +64,17 @@ public class MoreFragment extends Fragment {
         root.findViewById(R.id.github_button).setOnClickListener(social_listener);
         root.findViewById(R.id.mail_button).setOnClickListener(social_listener);
 
+        root.findViewById(R.id.share_button).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                shareIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_intent_message));
+                shareIntent.setType("text/plain");
+                Intent share = Intent.createChooser(shareIntent, null);
+                startActivity(share);
+            }
+        });
+
         TextView version_text = root.findViewById(R.id.version_text);
         version_text.setText(BuildConfig.VERSION_NAME);
         return root;

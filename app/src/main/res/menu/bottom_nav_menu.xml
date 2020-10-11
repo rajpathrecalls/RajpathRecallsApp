@@ -5,10 +5,10 @@
         android:icon="@drawable/menu_ic_listen"
         android:title="@string/listen_menu_title" />
 
-    <item
-        android:id="@+id/nav_schedule"
-        android:icon="@drawable/menu_ic_schedule"
-        android:title="@string/schedule_menu_title" />
+<!--    <item-->
+<!--        android:id="@+id/nav_schedule"-->
+<!--        android:icon="@drawable/menu_ic_schedule"-->
+<!--        android:title="@string/schedule_menu_title" />-->
 
     <item
         android:id="@+id/nav_more"

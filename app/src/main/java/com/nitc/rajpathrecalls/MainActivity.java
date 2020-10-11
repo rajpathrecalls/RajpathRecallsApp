@@ -117,9 +117,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             case R.id.nav_listen:
                 selected = new ListenFragment();
                 break;
-            case R.id.nav_schedule:
-                selected = new ScheduleFragment();
-                break;
+//            case R.id.nav_schedule:
+//                selected = new ScheduleFragment();
+//                break;
             case R.id.nav_more:
                 selected = new MoreFragment();
                 break;
@@ -136,6 +136,14 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
                 .replace(R.id.fragment_container, fragment)
                 .commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(current_fragment instanceof ListenFragment)
+            super.onBackPressed();
+        else
+            navBar.setSelectedItemId(R.id.nav_listen);
     }
 
     @Override
