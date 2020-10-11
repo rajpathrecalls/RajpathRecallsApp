@@ -52,7 +52,7 @@ public class ListenFragment extends Fragment {
                 getBoolean("background_video_on", true);
 
         final VideoView background_video = fragmentView.findViewById(R.id.videoView);
-        if(background_video_on) {
+        if (background_video_on) {
             background_video.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
                     + "/" + R.raw.bg_video));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -100,7 +100,7 @@ public class ListenFragment extends Fragment {
 
         updatePlayPauseView(true);
 
-        EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list), null);
+        EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list));
         e.populate();
 
         return fragmentView;
@@ -204,7 +204,7 @@ public class ListenFragment extends Fragment {
 
     private void startNowPlayingViews(String song, String artist) {
         final int animation_duration = 450;
-        now_song_view.setCurrentText(song + " - " +artist);
+        now_song_view.setCurrentText(song + " - " + artist);
         now_song_view.setSelected(true);    //to start marquee
 
         now_song_view.setX(-now_song_view.getWidth());
@@ -217,7 +217,7 @@ public class ListenFragment extends Fragment {
     }
 
     private void updateNowPlayingViews(String song, String artist) {
-        now_song_view.setText(song + " - " +artist);
+        now_song_view.setText(song + " - " + artist);
     }
 
     @Override
@@ -252,9 +252,9 @@ public class ListenFragment extends Fragment {
             updateSyncViews(2);  //disable sync views
 
         //on closing and reopening fragment
-        if(nowPlayingStarted)
+        if (nowPlayingStarted)
             updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
-        else if(player.isPrepared())
+        else if (player.isPrepared())
             startNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
     }
 

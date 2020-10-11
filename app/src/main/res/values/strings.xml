@@ -30,4 +30,6 @@
     <string name="cancel_text">CANCEL</string>
     <string name="sleep_dialog_title">Stop playback in 30 minutes</string>
     <string name="coming_up_title">Coming Up Today</string>
+    <string name="empty_schedule_text">There are no scheduled events at the moment. Feel free to listen
+        to some great tunes while you wait. Tap here to dismiss this message.</string>
 </resources>
