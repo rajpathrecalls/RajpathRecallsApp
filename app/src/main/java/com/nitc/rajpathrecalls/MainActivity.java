@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     Fragment current_fragment;
     RadioPlayerService radioPlayerService;
     private BottomNavigationView navBar;
+    private boolean isConnectingSnackbarActive = false;
 
 
     @Override
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                         });
 
             } else if(connection_status == RadioPlayerService.CONNECTION_SUCCESS){
-                showSnackbar(getString(R.string.connection_established_text),Snackbar.LENGTH_SHORT, null, null);
+                showConnectedSnackbar();
             }
         }
     };
@@ -95,7 +96,17 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     };
 
-    void showSnackbar(String message, int duration, String action_message, View.OnClickListener action_listener){
+    void showConnectingSnackbar(){
+        isConnectingSnackbarActive = true;
+        showSnackbar(getString(R.string.connecting_text), Snackbar.LENGTH_INDEFINITE, null, null);
+    }
+
+    private void showConnectedSnackbar(){
+        isConnectingSnackbarActive = false;
+        showSnackbar(getString(R.string.connection_established_text),Snackbar.LENGTH_SHORT, null, null);
+    }
+
+    private void showSnackbar(String message, int duration, String action_message, View.OnClickListener action_listener){
         Snackbar bar = Snackbar.make(navBar, message, duration);
         if(action_message != null)
             bar.setAction(action_message, action_listener);
@@ -158,6 +169,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 new IntentFilter(RadioPlayerService.CONNECTION_BROADCAST));
         LocalBroadcastManager.getInstance(this).registerReceiver(syncUpdateReceiver,
                 new IntentFilter(RadioPlayerService.SYNC_BROADCAST));
+
+        if(isConnectingSnackbarActive && radioPlayerService.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS){
+            showConnectedSnackbar();
+        }
     }
 
     @Override

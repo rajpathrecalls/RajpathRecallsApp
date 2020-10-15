@@ -111,8 +111,7 @@ public class ListenFragment extends Fragment {
         public void onClick(View v) {
             if (!getRadioPlayer().isPrepared()) {
                 getRadioPlayer().connectToRadio();
-                ((MainActivity) getContext()).showSnackbar(getString(R.string.connecting_text),
-                        Snackbar.LENGTH_INDEFINITE, null, null);
+                ((MainActivity) getContext()).showConnectingSnackbar();
             }
 
             if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
