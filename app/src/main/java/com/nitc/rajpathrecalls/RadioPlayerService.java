@@ -148,7 +148,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         setSyncState(1);
     }
 
-    void startSleepTimer(int minutes_to_sleep){
+    void startSleepTimer(int minutes_to_sleep) {
         sleep_handler = new Handler();
 
         sleep_handler.postDelayed(new Runnable() {
@@ -162,8 +162,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         sleep_end_time = System.currentTimeMillis() + minutes_to_sleep * 60 * 1000;
     }
 
-    void stopSleepTimer(){
-        if(sleep_handler != null){
+    void stopSleepTimer() {
+        if (sleep_handler != null) {
             sleep_handler.removeCallbacksAndMessages(null);
             sleep_handler = null;
         }
@@ -177,11 +177,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return isPaused;
     }
 
-    boolean isPrepared(){
+    boolean isPrepared() {
         return isPrepared;
     }
 
-    boolean isSleepTimer(){
+    boolean isSleepTimer() {
         return sleep_handler != null;
     }
 
@@ -189,7 +189,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return (int) player_offset;
     }
 
-    long getSleepEndTime(){
+    long getSleepEndTime() {
         return sleep_end_time;
     }
 
@@ -233,13 +233,13 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 .setProgress(0, 0, true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        if(getPlayerOffset() != 0) {
+        if (getPlayerOffset() != 0) {
             PendingIntent syncIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
             mBuilder.addAction(R.drawable.ic_sync, SYNC_ACTION, syncIntent);
         }
 
-        if(playPauseChanged){
-            if(isPaused){
+        if (playPauseChanged) {
+            if (isPaused) {
                 //update notification and set as not foreground
                 NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
                 stopForeground(false);
@@ -281,7 +281,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     private void setSyncState(int sync_state) {
-        if(sync_state == 2){    // sync success
+        if (sync_state == 2) {    // sync success
             player_offset = 0;
             player_offset_start = -1;
         }
@@ -353,7 +353,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
             } else {
                 updateConnectionState(CONNECTION_SUCCESS, true);
-                if(!isPrepared){
+                if (!isPrepared) {
                     togglePlayer(false);
                     isPrepared = true;
                 }
@@ -391,9 +391,9 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     private BroadcastReceiver notifActionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(PLAY_PAUSE_ACTION.equals(intent.getAction())) {
+            if (PLAY_PAUSE_ACTION.equals(intent.getAction())) {
                 togglePlayer(!isPaused);
-            } else if(SYNC_ACTION.equals(intent.getAction()) && temp_switch == null) {  //if not syncing already
+            } else if (SYNC_ACTION.equals(intent.getAction()) && temp_switch == null) {  //if not syncing already
                 syncToRadio();
                 now_playing_song = "Syncing…";
                 now_playing_artist = "";
@@ -417,7 +417,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                     if (!song_name.equals(now_playing_song) || !artist_name.equals(now_playing_artist)) {
                         updateNowPlaying(song_name, artist_name);
                     }
-                } catch (IOException ignored) {}
+                } catch (IOException ignored) {
+                }
             }
         };
     }
@@ -449,7 +450,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         stopSleepTimer();
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(this);
         unregisterReceiver(notifActionReceiver);
-        if(temp_switch != null)
+        if (temp_switch != null)
             temp_switch.release();
         mediaPlayer.release();
         mediaSession.release();

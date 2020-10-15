@@ -36,10 +36,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         navBar.setOnNavigationItemSelectedListener(this);
 
         Intent playerIntent = new Intent(this, RadioPlayerService.class);
-        if(savedInstanceState == null) {
+        if (savedInstanceState == null) {
             startService(playerIntent);     //will only create service if not running.
-                // so even if activity is closed and reopened, service is not recreated.
-                // only onStartCommand() will be called
+            // so even if activity is closed and reopened, service is not recreated.
+            // only onStartCommand() will be called
             goToFragment(new ListenFragment());
         }
         bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
@@ -51,14 +51,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             // We've bound to LocalService, cast the IBinder and get LocalService instance
             RadioPlayerService.LocalBinder binder = (RadioPlayerService.LocalBinder) service;
             radioPlayerService = binder.getService();
-            if(current_fragment instanceof ListenFragment)
+            if (current_fragment instanceof ListenFragment)
                 ((ListenFragment) current_fragment).updateViewsOnResume();
-            else if(current_fragment instanceof MoreFragment)
+            else if (current_fragment instanceof MoreFragment)
                 ((MoreFragment) current_fragment).updateViewsOnResume();
         }
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {}
+        public void onServiceDisconnected(ComponentName name) {
+        }
     };
 
     private BroadcastReceiver connectionUpdateReceiver = new BroadcastReceiver() {
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         public void onReceive(Context context, Intent intent) {
             int connection_status = intent.getIntExtra(RadioPlayerService.CONNECTION_BROADCAST, -1);
 
-            if(connection_status == RadioPlayerService.CONNECTION_FAILED){
+            if (connection_status == RadioPlayerService.CONNECTION_FAILED) {
                 showSnackbar(getString(R.string.connection_failed_text), Snackbar.LENGTH_INDEFINITE,
                         getString(R.string.retry_text), new View.OnClickListener() {
                             @Override
@@ -75,7 +76,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             }
                         });
 
-            } else if(connection_status == RadioPlayerService.CONNECTION_SUCCESS){
+            } else if (connection_status == RadioPlayerService.CONNECTION_SUCCESS) {
                 showConnectedSnackbar();
             }
         }
@@ -86,29 +87,29 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         public void onReceive(Context context, Intent intent) {
             int sync_state = intent.getIntExtra(RadioPlayerService.SYNC_BROADCAST, -1);
 
-            if(current_fragment instanceof  ListenFragment){
+            if (current_fragment instanceof ListenFragment) {
                 ((ListenFragment) current_fragment).onSyncUpdate(sync_state);
             }
 
-            if(sync_state == 2){
+            if (sync_state == 2) {
                 showSnackbar(getString(R.string.synced_confirmation_msg), Snackbar.LENGTH_SHORT, null, null);
             }
         }
     };
 
-    void showConnectingSnackbar(){
+    void showConnectingSnackbar() {
         isConnectingSnackbarActive = true;
         showSnackbar(getString(R.string.connecting_text), Snackbar.LENGTH_INDEFINITE, null, null);
     }
 
-    private void showConnectedSnackbar(){
+    private void showConnectedSnackbar() {
         isConnectingSnackbarActive = false;
-        showSnackbar(getString(R.string.connection_established_text),Snackbar.LENGTH_SHORT, null, null);
+        showSnackbar(getString(R.string.connection_established_text), Snackbar.LENGTH_SHORT, null, null);
     }
 
-    private void showSnackbar(String message, int duration, String action_message, View.OnClickListener action_listener){
+    private void showSnackbar(String message, int duration, String action_message, View.OnClickListener action_listener) {
         Snackbar bar = Snackbar.make(navBar, message, duration);
-        if(action_message != null)
+        if (action_message != null)
             bar.setAction(action_message, action_listener);
         bar.setAnchorView(navBar);
         bar.setBackgroundTint(0x80808080);
@@ -121,7 +122,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment selected;
 
-        switch(item.getItemId()){
+        switch (item.getItemId()) {
             default:
             case R.id.nav_listen:
                 selected = new ListenFragment();
@@ -133,13 +134,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                 selected = new MoreFragment();
                 break;
         }
-        if(!selected.getClass().equals(current_fragment.getClass())) {
+        if (!selected.getClass().equals(current_fragment.getClass())) {
             goToFragment(selected);
         }
         return true;
     }
 
-    void goToFragment(Fragment fragment){
+    void goToFragment(Fragment fragment) {
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
@@ -149,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
     @Override
     public void onBackPressed() {
-        if(current_fragment instanceof ListenFragment)
+        if (current_fragment instanceof ListenFragment)
             super.onBackPressed();
         else
             navBar.setSelectedItemId(R.id.nav_listen);
@@ -170,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         LocalBroadcastManager.getInstance(this).registerReceiver(syncUpdateReceiver,
                 new IntentFilter(RadioPlayerService.SYNC_BROADCAST));
 
-        if(isConnectingSnackbarActive && radioPlayerService.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS){
+        if (isConnectingSnackbarActive && radioPlayerService.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
             showConnectedSnackbar();
         }
     }

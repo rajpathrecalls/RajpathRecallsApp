@@ -52,7 +52,7 @@ public class MoreFragment extends Fragment {
                 if (isChecked && !service.isSleepTimer()) {
                     showSleepDialog();
 
-                } else if(!isChecked && service.isSleepTimer()){
+                } else if (!isChecked && service.isSleepTimer()) {
                     service.stopSleepTimer();
                     timer_text.animate().alpha(0f).setDuration(300);
                 }
@@ -111,18 +111,18 @@ public class MoreFragment extends Fragment {
         timer_text.setText(time_text);
     }
 
-    private void showSleepDialog(){
+    private void showSleepDialog() {
 
         LayoutInflater inflater = LayoutInflater.from(getContext());
-        View dialog_layout = inflater.inflate(R.layout.sleep_dialog, null ,false);
+        View dialog_layout = inflater.inflate(R.layout.sleep_dialog, null, false);
         final TextView title = dialog_layout.findViewById(R.id.dialog_title);
         final Slider slider = dialog_layout.findViewById(R.id.slider);
 
         slider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                String text = getString(R.string.sleep_dialog_title).replace("30", ""+(int)value);
-                if(value < 2f){
+                String text = getString(R.string.sleep_dialog_title).replace("30", "" + (int) value);
+                if (value < 2f) {
                     text = text.substring(0, text.length() - 1);
                 }
                 title.setText(text);
@@ -134,7 +134,7 @@ public class MoreFragment extends Fragment {
                 .setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        if(!((MainActivity)getContext()).radioPlayerService.isSleepTimer())
+                        if (!((MainActivity) getContext()).radioPlayerService.isSleepTimer())
                             sleep_switch.setChecked(false);
                     }
                 })
@@ -143,7 +143,7 @@ public class MoreFragment extends Fragment {
         dialog_layout.findViewById(R.id.okay_btn).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((MainActivity)getContext()).radioPlayerService.startSleepTimer((int)slider.getValue());
+                ((MainActivity) getContext()).radioPlayerService.startSleepTimer((int) slider.getValue());
                 updateTimerText();
                 timer_text.animate().alpha(1f).setDuration(300);
                 dialog.cancel();
@@ -158,7 +158,7 @@ public class MoreFragment extends Fragment {
         });
     }
 
-    void updateViewsOnResume(){
+    void updateViewsOnResume() {
         RadioPlayerService rad = ((MainActivity) getContext()).radioPlayerService;
         if (rad == null)
             return;

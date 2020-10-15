@@ -28,8 +28,6 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.google.android.material.snackbar.Snackbar;
-
 public class ListenFragment extends Fragment {
 
     private ImageView play_pause_btn;
