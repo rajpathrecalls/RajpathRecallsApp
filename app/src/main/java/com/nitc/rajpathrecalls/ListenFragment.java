@@ -125,7 +125,6 @@ public class ListenFragment extends Fragment {
         @Override
         public void onClick(View v) {
             getRadioPlayer().syncToRadio();
-            updateSyncViews(1);
         }
     };
 
@@ -133,11 +132,7 @@ public class ListenFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean isPaused = intent.getBooleanExtra(RadioPlayerService.PLAY_PAUSE_BROADCAST, true);
-
-            updatePlayPauseView(getRadioPlayer().isPaused());
-            if (!isPaused && getRadioPlayer().getPlayerOffset() != 0) {
-                updateSyncViews(0);
-            }
+            updatePlayPauseView(isPaused);
         }
     };
 
@@ -157,8 +152,8 @@ public class ListenFragment extends Fragment {
     };
 
     //called from activity
-    void onSyncUpdate(boolean isSyncSuccess) {
-        updateSyncViews(isSyncSuccess ? 2 : 0);
+    void onSyncUpdate(int sync_state) {
+        updateSyncViews(sync_state);
     }
 
     private void updatePlayPauseView(boolean isPaused) {

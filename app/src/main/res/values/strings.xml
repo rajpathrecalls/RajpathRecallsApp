@@ -8,7 +8,6 @@
     <string name="connection_failed_text">Connection Failed</string>
     <string name="retry_text">RETRY</string>
     <string name="connection_established_text">Connection established</string>
-    <string name="sync_failed_text">Sync Failed</string>
     <string name="synced_confirmation_msg">Synced to livestream</string>
     <string name="elapsed_seconds">0 seconds behind livestream</string>
     <string name="elapsed_minutes">0:00 minutes behind livestream</string>

@@ -163,7 +163,6 @@ public class MoreFragment extends Fragment {
         if (rad == null)
             return;
 
-        SwitchMaterial sleep_switch = ((ViewGroup)timer_text.getParent()).findViewById(R.id.timer_switch);
         sleep_switch.setChecked(rad.isSleepTimer());
         if (rad.isSleepTimer()) {
             updateTimerText();

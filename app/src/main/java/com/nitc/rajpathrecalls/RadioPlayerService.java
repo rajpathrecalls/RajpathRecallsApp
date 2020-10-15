@@ -58,7 +58,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     private long sleep_end_time;
 
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
-            PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause";        //public broadcasts action, so need unique
+            PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause",
+            SYNC_ACTION = "com.rajpathrecalls.sync";        //public broadcasts action, so need unique
 
     static final int CONNECTION_SUCCESS = 1, CONNECTION_TRYING = 2, CONNECTION_FAILED = 3;
     static final String PLAY_PAUSE_BROADCAST = "playpause", CONNECTION_BROADCAST = "connection_update",
@@ -91,12 +92,15 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            CharSequence name = getResources().getString(R.string.app_name);// The user-visible name of the channel.
+            CharSequence name = getResources().getString(R.string.app_name);    // The user-visible name of the channel.
             NotificationChannel mChannel = new NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_LOW);
             mNotificationManager.createNotificationChannel(mChannel);
         }
 
-        registerReceiver(notifActionReceiver, new IntentFilter(PLAY_PAUSE_ACTION));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(PLAY_PAUSE_ACTION);
+        filter.addAction(SYNC_ACTION);
+        registerReceiver(notifActionReceiver, filter);
     }
 
     void togglePlayer(boolean shouldPause) {
@@ -141,6 +145,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         temp_switch = mediaPlayer;
         mediaPlayer = new SimpleExoPlayer.Builder(this).build();
         connectToRadio();
+        setSyncState(1);
     }
 
     void startSleepTimer(int minutes_to_sleep){
@@ -198,19 +203,17 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             if (calculated_offset == 0)
                 calculated_offset = 1;      //quick pause play taps give one second offset
             player_offset += calculated_offset;
+            setSyncState(0);    //out of sync
         }
     }
 
-    private void makeNotification(boolean updateService) {
+    private void makeNotification(boolean playPauseChanged) {
         final int NOTIFICATION_ID = 6;
         Bitmap pic = BitmapFactory.decodeResource(getResources(), R.drawable.notif_album_art);
 
-        Intent notifButtonIntent = new Intent(PLAY_PAUSE_ACTION);   //implicit intent
-        PendingIntent actionIntent = PendingIntent.getBroadcast(this, 0, notifButtonIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent playPauseIntent = PendingIntent.getBroadcast(this, 0, new Intent(PLAY_PAUSE_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
 
         Intent notifClickIntent = new Intent(this, MainActivity.class); //explicit intent
-        notifClickIntent.setAction(Intent.ACTION_MAIN);
-        notifClickIntent.addCategory(Intent.CATEGORY_LAUNCHER);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notifClickIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
@@ -223,14 +226,19 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 .setContentIntent(contentIntent)
                 .setAutoCancel(false)
                 .addAction(isPaused ? R.drawable.ic_play : R.drawable.ic_pause,
-                        PLAY_PAUSE_ACTION, actionIntent)
+                        PLAY_PAUSE_ACTION, playPauseIntent)
                 .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                         .setMediaSession(mediaSession.getSessionToken())
                         .setShowActionsInCompactView(0))
                 .setProgress(0, 0, true)
                 .setPriority(NotificationCompat.PRIORITY_LOW);
 
-        if(updateService){
+        if(getPlayerOffset() != 0) {
+            PendingIntent syncIntent = PendingIntent.getBroadcast(this, 0, new Intent(SYNC_ACTION), PendingIntent.FLAG_UPDATE_CURRENT);
+            mBuilder.addAction(R.drawable.ic_sync, SYNC_ACTION, syncIntent);
+        }
+
+        if(playPauseChanged){
             if(isPaused){
                 //update notification and set as not foreground
                 NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, mBuilder.build());
@@ -272,13 +280,14 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         }
     }
 
-    private void setSynced(boolean isSyncSuccess) {
-        if (isSyncSuccess) {
-            player_offset = 0;  //synced
+    private void setSyncState(int sync_state) {
+        if(sync_state == 2){    // sync success
+            player_offset = 0;
             player_offset_start = -1;
         }
+
         Intent intent = new Intent(SYNC_BROADCAST);
-        intent.putExtra(SYNC_BROADCAST, isSyncSuccess);
+        intent.putExtra(SYNC_BROADCAST, sync_state);
         sendLocalBroadcast(intent);
     }
 
@@ -335,7 +344,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 temp_switch = null;
 
                 updateConnectionState(CONNECTION_SUCCESS, false);
-                setSynced(true);
+                setSyncState(2);
 
                 if (isPaused)
                     togglePlayer(false); //need to update isPaused
@@ -363,7 +372,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             mediaPlayer = temp_switch;
             temp_switch = null;
             updateConnectionState(CONNECTION_SUCCESS, false); //old player is connected
-            setSynced(false);
+            setSyncState(0);
         } else {
             updateConnectionState(CONNECTION_FAILED, true);
         }
@@ -382,7 +391,14 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     private BroadcastReceiver notifActionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            togglePlayer(!isPaused);
+            if(PLAY_PAUSE_ACTION.equals(intent.getAction())) {
+                togglePlayer(!isPaused);
+            } else if(SYNC_ACTION.equals(intent.getAction()) && temp_switch == null) {  //if not syncing already
+                syncToRadio();
+                now_playing_song = "Syncing…";
+                now_playing_artist = "";
+                makeNotification(false);
+            }
         }
     };
 

@@ -83,15 +83,13 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private BroadcastReceiver syncUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            boolean isSyncSuccess = intent.getBooleanExtra(RadioPlayerService.SYNC_BROADCAST, false);
+            int sync_state = intent.getIntExtra(RadioPlayerService.SYNC_BROADCAST, -1);
 
             if(current_fragment instanceof  ListenFragment){
-                ((ListenFragment) current_fragment).onSyncUpdate(isSyncSuccess);
+                ((ListenFragment) current_fragment).onSyncUpdate(sync_state);
             }
 
-            if(!isSyncSuccess){
-                showSnackbar(getString(R.string.sync_failed_text), Snackbar.LENGTH_SHORT, null, null);
-            } else {
+            if(sync_state == 2){
                 showSnackbar(getString(R.string.synced_confirmation_msg), Snackbar.LENGTH_SHORT, null, null);
             }
         }

@@ -20,7 +20,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="com.nitc.rajpathrecalls.MainActivity" />
+        <activity android:name="com.nitc.rajpathrecalls.MainActivity"
+            android:launchMode="singleTop"/>
 
         <service android:name="com.nitc.rajpathrecalls.RadioPlayerService"
             android:stopWithTask="true" />
