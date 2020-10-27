@@ -23,16 +23,20 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.TimeZone;
 
 public class EventList {
 
     static class Event {
         private String title, sub_title;
         private Date when;
+
+        //set to ist timezone in event list constructor (since event times are in ist)
         private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         //For Firebase
         public Event() {
+
         }
 
         //DO NOT CHANGE FOLLOWING METHOD NAMES [firebase names]
@@ -71,6 +75,10 @@ public class EventList {
     private LinkedList<Event> events;
 
     EventList(LinearLayout layout) {
+
+        //event times are in ist
+        Event.sdf.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
+
         root = layout;
         mdata = FirebaseDatabase.getInstance().getReference();
     }

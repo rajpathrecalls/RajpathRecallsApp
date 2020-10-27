@@ -76,16 +76,6 @@ public class ChatFragment extends Fragment {
             time_view = itemView.findViewById(R.id.time);
         }
 
-        void hideSender() {
-            sender_view.setVisibility(View.GONE);
-            time_view.setVisibility(View.GONE);
-        }
-
-        void showSender() {
-            sender_view.setVisibility(View.VISIBLE);
-            time_view.setVisibility(View.VISIBLE);
-        }
-
         void setData(Message m) {
             sender_view.setText(m.getSender());
             message_view.setText(m.getMessage());
