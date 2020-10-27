@@ -4,7 +4,7 @@
     <string name="syncing_text">SYNCING</string>
     <string name="pause_play_content_descrip">pause_play</string>
     <string name="listen_menu_title">Listen</string>
-    <string name="schedule_menu_title">Schedule</string>
+    <string name="chat_menu_title">Live Chat</string>
     <string name="connection_failed_text">Connection Failed</string>
     <string name="retry_text">RETRY</string>
     <string name="connection_established_text">Connection established</string>
@@ -33,4 +33,6 @@
     <string name="empty_schedule_text">There are no scheduled events at the moment. Feel free to listen
         to some great tunes while you wait. Tap here to dismiss this message.</string>
     <string name="share_intent_message">Hey! I\'ve been listening to Rajpath RECalls. You can check it out at rajpathrecalls.github.io/Beta or get the app at play.google.com</string>
+    <string name="message_box_default">Type a message</string>
+    <string name="send_content_descrip">edit/send message</string>
 </resources>

@@ -21,7 +21,8 @@
         </activity>
 
         <activity android:name="com.nitc.rajpathrecalls.MainActivity"
-            android:launchMode="singleTop"/>
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustPan"/>
 
         <service android:name="com.nitc.rajpathrecalls.RadioPlayerService"
             android:stopWithTask="true" />

@@ -127,9 +127,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             case R.id.nav_listen:
                 selected = new ListenFragment();
                 break;
-//            case R.id.nav_schedule:
-//                selected = new ScheduleFragment();
-//                break;
+            case R.id.nav_chat:
+                selected = new ChatFragment();
+                break;
             case R.id.nav_more:
                 selected = new MoreFragment();
                 break;
