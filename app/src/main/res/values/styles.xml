@@ -5,16 +5,16 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:fontFamily">@font/raleway_regular</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
     </style>
 
     <style name="NavLabelAppearanceInactive">
-        <item name="fontFamily">@font/raleway_medium</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:textSize">12sp</item>
     </style>
 
     <style name="NavLabelAppearanceActive">
-        <item name="fontFamily">@font/raleway_medium</item>
+        <item name="fontFamily">@font/montserrat_medium</item>
         <item name="android:textSize">13sp</item>
     </style>
 

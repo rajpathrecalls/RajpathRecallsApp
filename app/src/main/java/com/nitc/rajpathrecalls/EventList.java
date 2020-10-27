@@ -29,7 +29,7 @@ public class EventList {
     static class Event {
         private String title, sub_title;
         private Date when;
-        private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
         //For Firebase
         public Event() {

@@ -27,7 +27,7 @@
             android:layout_marginTop="40dp"
             android:textSize="16sp"
             android:textColor="@color/colorPrimary"
-            android:fontFamily="@font/raleway_bold" />
+            android:fontFamily="@font/montserrat_semibold" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/background_switch"
@@ -66,7 +66,7 @@
             android:text="@string/contact_us_text"
             android:textSize="16sp"
             android:textColor="@color/colorPrimary"
-            android:fontFamily="@font/raleway_bold" />
+            android:fontFamily="@font/montserrat_semibold" />
 
         <TextView
             android:id="@+id/instagram_button"
@@ -121,7 +121,7 @@
             android:text="@string/about_text"
             android:textSize="16sp"
             android:textColor="@color/colorPrimary"
-            android:fontFamily="@font/raleway_bold" />
+            android:fontFamily="@font/montserrat_semibold" />
 
         <TextView
             android:layout_width="match_parent"

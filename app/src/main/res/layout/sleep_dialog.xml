@@ -11,7 +11,7 @@
         android:layout_marginStart="20dp"
         android:background="@drawable/ripple_bg"
         android:layout_marginTop="20dp"
-        android:fontFamily="@font/raleway_medium"
+        android:fontFamily="@font/montserrat_medium"
         android:textColor="@color/colorPrimary"
         android:textSize="18sp"
         android:text="@string/sleep_dialog_title"
