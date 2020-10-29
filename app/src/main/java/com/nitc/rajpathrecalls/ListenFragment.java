@@ -4,6 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -25,8 +27,10 @@ import android.widget.VideoView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 public class ListenFragment extends Fragment {
 
@@ -96,8 +100,6 @@ public class ListenFragment extends Fragment {
         play_pause_btn.setOnClickListener(onPlayPauseClick);
         sync_button.setOnClickListener(onSyncClick);
 
-        updatePlayPauseView(true);
-
         EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list));
         e.populate();
 
@@ -129,7 +131,7 @@ public class ListenFragment extends Fragment {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean isPaused = intent.getBooleanExtra(RadioPlayerService.PLAY_PAUSE_BROADCAST, true);
-            updatePlayPauseView(isPaused);
+            updatePlayPauseViewWithAnim(isPaused);
         }
     };
 
@@ -153,8 +155,17 @@ public class ListenFragment extends Fragment {
         updateSyncViews(sync_state);
     }
 
-    private void updatePlayPauseView(boolean isPaused) {
-        play_pause_btn.setImageResource(isPaused ? R.drawable.ic_play : R.drawable.ic_pause);
+    private void updatePlayPauseViewWithAnim(boolean isPaused) {
+
+        Drawable avd = ResourcesCompat.getDrawable(getResources(), isPaused ? R.drawable.avd_pause_to_play : R.drawable.avd_play_to_pause, null);
+        play_pause_btn.setImageDrawable(avd);
+
+        if (avd instanceof AnimatedVectorDrawable) {
+            ((AnimatedVectorDrawable) avd).start();
+        } else if (avd instanceof AnimatedVectorDrawableCompat) {
+            ((AnimatedVectorDrawableCompat) avd).start();
+        }
+
     }
 
     private void updateSyncViews(int sync_state) {
@@ -237,7 +248,9 @@ public class ListenFragment extends Fragment {
     //also called after service is bound
     void updateViewsOnResume() {
         RadioPlayerService player = getRadioPlayer();
-        updatePlayPauseView(player.isPaused());
+
+        play_pause_btn.setImageResource(player.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
+
         if (player.getPlayerOffset() != 0)
             updateSyncViews(0);  //show sync views
         else

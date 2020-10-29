@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:shape="oval">
-    <solid android:color="@color/play_button_color"/>
+    <solid>
+        <aapt:attr name="android:color">
+            <selector>
+                <item android:color="#808080" android:state_pressed="true" />
+                <item android:color="@color/colorPrimary" />
+            </selector>
+        </aapt:attr>
+    </solid>
 </shape>

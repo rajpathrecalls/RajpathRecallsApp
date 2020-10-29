@@ -225,6 +225,8 @@ public class ChatFragment extends Fragment {
                 Matcher m = Pattern.compile("^[A-Za-z0-9]+(?:_[A-Za-z0-9]+)*$").matcher(name);
                 if (m.matches()) {
                     username = name;
+                    getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE)
+                            .edit().putString("chat_username", username).apply();
                     shown.dismiss();
                 } else {
                     e.setError("Invalid Username");
@@ -238,7 +240,6 @@ public class ChatFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
-        getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().putString("chat_username", username).apply();
         adapter.stopListening();
     }
 

@@ -84,7 +84,6 @@
         android:textColor="@color/colorPrimary"
         android:textSize="20sp"
         app:drawableEndCompat="@drawable/exclamation_drawable"
-        app:drawableTint="@color/now_playing_drawable_color"
         app:layout_constraintBottom_toTopOf="@+id/song_name_view"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
