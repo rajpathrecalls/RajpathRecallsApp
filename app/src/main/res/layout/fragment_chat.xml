@@ -12,31 +12,30 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:layout_marginEnd="10dp"
         android:layout_marginBottom="10dp"
         android:background="@drawable/chat_type_bg"
         android:hint="@string/message_box_default"
+        android:importantForAutofill="no"
         android:inputType="textMultiLine"
-        android:paddingVertical="10dp"
         android:paddingHorizontal="15dp"
+        android:paddingVertical="10dp"
         android:textColor="@color/colorPrimary"
         android:textColorHint="@color/colorPrimaryHalf"
         android:textSize="15sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_fn_button"
-        app:layout_constraintStart_toStartOf="parent"
-        android:importantForAutofill="no" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <ImageView
         android:id="@+id/message_fn_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="10dp"
-        app:layout_constraintBottom_toBottomOf="@+id/message_view"
+        android:layout_height="0dp"
+        android:contentDescription="@string/send_content_descrip"
+        android:paddingHorizontal="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/message_view"
-        app:srcCompat="@drawable/ic_name_edit"
-        android:contentDescription="@string/send_content_descrip" />
+        app:layout_constraintTop_toBottomOf="@+id/chat_recycler"
+        app:srcCompat="@drawable/ic_edit_send" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_recycler"

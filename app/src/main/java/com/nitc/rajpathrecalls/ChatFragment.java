@@ -3,6 +3,8 @@ package com.nitc.rajpathrecalls;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.AnimatedVectorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
@@ -16,9 +18,11 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
@@ -42,6 +46,7 @@ public class ChatFragment extends Fragment {
     private ImageView fn_button;
     private String username;
     private FirebaseRecyclerAdapter<Message, ChatViewHolder> adapter;
+    private boolean sendButtonActive = false;
 
     static class Message {
         private String sender, message, time;
@@ -106,10 +111,20 @@ public class ChatFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
 
-                if (s.toString().trim().length() > 0)
-                    fn_button.setImageResource(R.drawable.ic_send);
-                else
-                    fn_button.setImageResource(R.drawable.ic_name_edit);
+                boolean isSendButton = s.toString().trim().length() > 0;
+                if (isSendButton == sendButtonActive)
+                    return;
+
+                sendButtonActive = isSendButton;
+                Drawable avd = ResourcesCompat.getDrawable(getResources(),
+                        isSendButton ? R.drawable.avd_edit_to_send : R.drawable.avd_send_to_edit, null);
+                fn_button.setImageDrawable(avd);
+
+                if (avd instanceof AnimatedVectorDrawable) {
+                    ((AnimatedVectorDrawable) avd).start();
+                } else if (avd instanceof AnimatedVectorDrawableCompat) {
+                    ((AnimatedVectorDrawableCompat) avd).start();
+                }
             }
 
             @Override

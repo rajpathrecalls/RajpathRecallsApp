@@ -38,6 +38,7 @@
         android:text="@string/elapsed_minutes"
         android:textColor="@color/colorPrimary"
         android:visibility="gone"
+        android:textSize="13.5sp"
         app:layout_constraintBottom_toBottomOf="@+id/sync_button"
         app:layout_constraintEnd_toStartOf="@+id/sync_button"
         app:layout_constraintHorizontal_bias="0.5"
@@ -76,13 +77,13 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="5dp"
+        android:layout_marginBottom="2dp"
         android:alpha="0"
         android:drawablePadding="5dp"
         android:fontFamily="@font/montserrat_medium"
         android:text="@string/now_playing_text"
         android:textColor="@color/colorPrimary"
-        android:textSize="20sp"
+        android:textSize="19sp"
         app:drawableEndCompat="@drawable/exclamation_drawable"
         app:layout_constraintBottom_toTopOf="@+id/song_name_view"
         app:layout_constraintEnd_toEndOf="parent"
@@ -105,7 +106,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
             android:textColor="@color/subTextColor"
-            android:textSize="18sp" />
+            android:textSize="17.5sp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -114,7 +115,7 @@
             android:marqueeRepeatLimit="marquee_forever"
             android:singleLine="true"
             android:textColor="@color/subTextColor"
-            android:textSize="18sp" />
+            android:textSize="17.5sp" />
     </TextSwitcher>
 
     <TextView
@@ -125,7 +126,7 @@
         android:fontFamily="@font/montserrat_medium"
         android:text="@string/coming_up_title"
         android:textColor="@color/colorPrimary"
-        android:textSize="20sp"
+        android:textSize="19sp"
         app:layout_constraintBottom_toTopOf="@+id/scrollView2"
         app:layout_constraintStart_toStartOf="@+id/now_playing_title"
         app:layout_constraintTop_toTopOf="parent"
