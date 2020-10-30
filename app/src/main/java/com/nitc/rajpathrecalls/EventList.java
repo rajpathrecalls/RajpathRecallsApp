@@ -9,6 +9,7 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 
@@ -27,6 +28,7 @@ import java.util.TimeZone;
 
 public class EventList {
 
+    @Keep       //dont change name while minifying
     static class Event {
         private String title, sub_title;
         private Date when;
@@ -93,7 +95,7 @@ public class EventList {
                 events = new LinkedList<>();
                 for (DataSnapshot s : snapshot.child("Schedule").getChildren()) {
                     Event e = s.getValue(Event.class);
-                    if (now.before(e.when))
+                    if (e!= null && now.before(e.when))
                         events.add(e);
                 }
 
