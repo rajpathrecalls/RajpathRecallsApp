@@ -146,6 +146,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         mediaPlayer = new SimpleExoPlayer.Builder(this).build();
         connectToRadio();
         setSyncState(1);
+        updateNowPlaying("Syncing…", "");
     }
 
     void startSleepTimer(int minutes_to_sleep) {
@@ -395,9 +396,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 togglePlayer(!isPaused);
             } else if (SYNC_ACTION.equals(intent.getAction()) && temp_switch == null) {  //if not syncing already
                 syncToRadio();
-                now_playing_song = "Syncing…";
-                now_playing_artist = "";
-                makeNotification(false);
             }
         }
     };
