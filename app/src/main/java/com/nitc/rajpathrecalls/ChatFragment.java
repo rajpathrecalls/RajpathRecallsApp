@@ -14,7 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,9 +49,10 @@ public class ChatFragment extends Fragment {
     private String username;
     private FirebaseRecyclerAdapter<Message, ChatViewHolder> adapter;
     private boolean sendButtonActive = false;
+    private ProgressBar chat_loading;
 
     static class Message {
-        private String sender, message, time;
+        private final String sender, message, time;
         private static final SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
 
         public Message(String sender, String message, long time) {
@@ -97,6 +100,7 @@ public class ChatFragment extends Fragment {
 
         message_box = root.findViewById(R.id.message_view);
         fn_button = root.findViewById(R.id.message_fn_button);
+        chat_loading = root.findViewById(R.id.chat_load);
         username = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
                 getString("chat_username", null);
         if (username == null) {
@@ -168,6 +172,15 @@ public class ChatFragment extends Fragment {
 
         adapter = new FirebaseRecyclerAdapter<Message, ChatViewHolder>(options) {
 
+            @Override
+            public void onDataChanged() {
+                if (chat_loading != null) {
+                    chat_loading.setVisibility(View.GONE);
+                    chat_loading = null;
+                }
+                super.onDataChanged();
+            }
+
             @NonNull
             @Override
             public ChatViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -185,20 +198,25 @@ public class ChatFragment extends Fragment {
     }
 
 
-    private View.OnClickListener fn_listener = new View.OnClickListener() {
+    private final View.OnClickListener fn_listener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String message = message_box.getText().toString().trim();
 
             if (message.length() > 0) {
-                DatabaseReference data = FirebaseDatabase.getInstance().getReference().child("Chat").push();
-                Map<String, Object> map = new HashMap<>();
-                map.put("sender", username);
-                map.put("message", message);
-                map.put("time", Calendar.getInstance().getTimeInMillis());
-                data.setValue(map);
+                if (chat_loading == null) {
+                    DatabaseReference data = FirebaseDatabase.getInstance().getReference().child("Chat").push();
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("sender", username);
+                    map.put("message", message);
+                    map.put("time", Calendar.getInstance().getTimeInMillis());
+                    data.setValue(map);
 
-                message_box.setText("");
+                    message_box.setText("");
+
+                } else {
+                    Toast.makeText(getContext(), R.string.connecting_text, Toast.LENGTH_SHORT).show();
+                }
 
             } else {
                 showNameDialog();
