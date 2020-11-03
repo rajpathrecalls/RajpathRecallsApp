@@ -41,8 +41,6 @@ public class ListenFragment extends Fragment {
     private TextSwitcher now_song_view;
     private boolean nowPlayingStarted = false;
 
-    private MediaPlayer bg_player = null;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,10 +62,9 @@ public class ListenFragment extends Fragment {
             background_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
-                    bg_player = mp;
-                    bg_player.setLooping(true);
-                    bg_player.setVolume(0, 0);
-                    bg_player.start();
+                    mp.setLooping(true);
+                    mp.setVolume(0, 0);
+                    mp.start();
                 }
             });
 
@@ -78,7 +75,6 @@ public class ListenFragment extends Fragment {
                     getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().
                             putBoolean("background_video_on", false).apply();
                     Toast.makeText(getContext(), R.string.bg_video_error_toast, Toast.LENGTH_SHORT).show();
-                    bg_player = null;
                     return true;
                 }
             });
@@ -265,15 +261,6 @@ public class ListenFragment extends Fragment {
             updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
         else if (!"".equals(getRadioPlayer().getNowPlaying()[0]) && !"".equals(getRadioPlayer().getNowPlaying()[1]))
             startNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (bg_player != null) {
-            bg_player.release();
-            bg_player = null;
-        }
     }
 
     private RadioPlayerService getRadioPlayer() {
