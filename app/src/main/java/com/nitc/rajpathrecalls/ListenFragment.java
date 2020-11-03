@@ -77,7 +77,7 @@ public class ListenFragment extends Fragment {
                     background_video.setVisibility(View.GONE);
                     getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().
                             putBoolean("background_video_on", false).apply();
-                    Toast.makeText(getContext(), "Canvas isn't supported on this device :(", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), R.string.bg_video_error_toast, Toast.LENGTH_SHORT).show();
                     bg_player = null;
                     return true;
                 }
@@ -106,7 +106,7 @@ public class ListenFragment extends Fragment {
         return fragmentView;
     }
 
-    private View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
+    private final View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             if (!getRadioPlayer().isPrepared()) {
@@ -120,14 +120,14 @@ public class ListenFragment extends Fragment {
         }
     };
 
-    private View.OnClickListener onSyncClick = new View.OnClickListener() {
+    private final View.OnClickListener onSyncClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             getRadioPlayer().syncToRadio();
         }
     };
 
-    private BroadcastReceiver playPauseUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver playPauseUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             boolean isPaused = intent.getBooleanExtra(RadioPlayerService.PLAY_PAUSE_BROADCAST, true);
@@ -135,7 +135,7 @@ public class ListenFragment extends Fragment {
         }
     };
 
-    private BroadcastReceiver nowPlayingUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver nowPlayingUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String song_name = intent.getStringExtra("song"),
@@ -177,10 +177,9 @@ public class ListenFragment extends Fragment {
 
             String elapsed_time;
             if (elapsed_min == 0) {
-                elapsed_time = getString(R.string.elapsed_seconds).replace("0", "" + elapsed_sec);
+                elapsed_time = getResources().getQuantityString(R.plurals.elapsed_seconds, elapsed_sec, elapsed_sec);
             } else {
-                String time = elapsed_min + ":" + (elapsed_sec < 10 ? "0" : "") + elapsed_sec;
-                elapsed_time = getString(R.string.elapsed_minutes).replace("0:00", time);
+                elapsed_time = getString(R.string.elapsed_minutes, elapsed_min, elapsed_sec);
             }
 
             offset_text.setText(elapsed_time);

@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
     }
 
-    private ServiceConnection serviceConnection = new ServiceConnection() {
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
@@ -62,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     };
 
-    private BroadcastReceiver connectionUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver connectionUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             int connection_status = intent.getIntExtra(RadioPlayerService.CONNECTION_BROADCAST, -1);
@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         }
     };
 
-    private BroadcastReceiver syncUpdateReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver syncUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             int sync_state = intent.getIntExtra(RadioPlayerService.SYNC_BROADCAST, -1);
@@ -122,18 +122,15 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment selected;
 
-        switch (item.getItemId()) {
-            default:
-            case R.id.nav_listen:
-                selected = new ListenFragment();
-                break;
-            case R.id.nav_chat:
-                selected = new ChatFragment();
-                break;
-            case R.id.nav_more:
-                selected = new MoreFragment();
-                break;
+        int itemId = item.getItemId();
+        if (itemId == R.id.nav_chat) {
+            selected = new ChatFragment();
+        } else if (itemId == R.id.nav_more) {
+            selected = new MoreFragment();
+        } else {        //default
+            selected = new ListenFragment();
         }
+
         if (!selected.getClass().equals(current_fragment.getClass())) {
             goToFragment(selected);
         }

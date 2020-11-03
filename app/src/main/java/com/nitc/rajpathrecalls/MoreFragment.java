@@ -80,23 +80,19 @@ public class MoreFragment extends Fragment {
         return root;
     }
 
-    private View.OnClickListener social_listener = new View.OnClickListener() {
+    private final View.OnClickListener social_listener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String link = null;
-            switch (v.getId()) {
-                case R.id.instagram_button:
-                    link = "https://www.instagram.com/rajpath.recalls_nitc/";
-                    break;
-                case R.id.facebook_button:
-                    link = "https://facebook.com/rajpath.recalls/";
-                    break;
-                case R.id.github_button:
-                    link = "https://github.com/rajpathrecalls/";
-                    break;
-                case R.id.mail_button:
-                    link = "mailto:rajpathrecalls@gmail.com";
-                    break;
+            int id = v.getId();
+            if (id == R.id.instagram_button) {
+                link = "https://www.instagram.com/rajpath.recalls_nitc/";
+            } else if (id == R.id.facebook_button) {
+                link = "https://facebook.com/rajpath.recalls/";
+            } else if (id == R.id.github_button) {
+                link = "https://github.com/rajpathrecalls/";
+            } else if (id == R.id.mail_button) {
+                link = "mailto:rajpathrecalls@gmail.com";
             }
             Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
             startActivity(launchIntent);
@@ -106,9 +102,7 @@ public class MoreFragment extends Fragment {
     private void updateTimerText() {
         long end_time = ((MainActivity) getContext()).radioPlayerService.getSleepEndTime();
         int minutes_remaining = (int) ((end_time - System.currentTimeMillis()) / 60000);
-        String time_text = getString(R.string.sleep_timer_remaining_time).
-                replace("0", "" + minutes_remaining);
-        timer_text.setText(time_text);
+        timer_text.setText(getResources().getQuantityString(R.plurals.sleep_timer_remaining_time, minutes_remaining, minutes_remaining));
     }
 
     private void showSleepDialog() {
@@ -116,16 +110,13 @@ public class MoreFragment extends Fragment {
         LayoutInflater inflater = LayoutInflater.from(getContext());
         View dialog_layout = inflater.inflate(R.layout.sleep_dialog, null, false);
         final TextView title = dialog_layout.findViewById(R.id.dialog_title);
+        title.setText(getResources().getQuantityString(R.plurals.sleep_dialog_title, 30, 30));
         final Slider slider = dialog_layout.findViewById(R.id.slider);
 
         slider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                String text = getString(R.string.sleep_dialog_title).replace("30", "" + (int) value);
-                if (value < 2f) {
-                    text = text.substring(0, text.length() - 1);
-                }
-                title.setText(text);
+                title.setText(getResources().getQuantityString(R.plurals.sleep_dialog_title, (int)value, (int)value));
             }
         });
 

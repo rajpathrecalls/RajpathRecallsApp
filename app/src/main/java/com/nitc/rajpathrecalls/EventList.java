@@ -71,9 +71,9 @@ public class EventList {
         }
     }
 
-    private DatabaseReference mdata;
+    private final DatabaseReference mdata;
 
-    private LinearLayout root;
+    private final LinearLayout root;
     private LinkedList<Event> events;
 
     EventList(LinearLayout layout) {

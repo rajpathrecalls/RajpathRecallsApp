@@ -9,8 +9,11 @@
     <string name="retry_text">RETRY</string>
     <string name="connection_established_text">Connection established</string>
     <string name="synced_confirmation_msg">Synced to livestream</string>
-    <string name="elapsed_seconds">0 seconds behind livestream</string>
-    <string name="elapsed_minutes">0:00 minutes behind livestream</string>
+    <plurals name="elapsed_seconds">
+        <item quantity="one">%1$d second behind livestream</item>
+        <item quantity="other">%1$d seconds behind livestream</item>
+    </plurals>
+    <string name="elapsed_minutes">%1$d:%2$02d minutes behind livestream</string>
     <string name="connecting_text">Establishing connection…</string>
     <string name="now_playing_text">Now Playing</string>
     <string name="more_menu_title">More</string>
@@ -25,14 +28,23 @@
     <string name="build_version_text">Build Version</string>
     <string name="contribute_text">Contribute</string>
     <string name="share_text">Share</string>
-    <string name="sleep_timer_remaining_time">Stopping playback in 0 minutes</string>
+    <plurals name="sleep_timer_remaining_time">
+        <item quantity="one">Stopping playback in %1$d minute</item>
+        <item quantity="other">Stopping playback in %1$d minutes</item>
+    </plurals>
     <string name="okay_text">OKAY</string>
     <string name="cancel_text">@android:string/cancel</string>
-    <string name="sleep_dialog_title">Stop playback in 30 minutes</string>
+    <plurals name="sleep_dialog_title">
+        <item quantity="one">Stop playback in %1$d minute</item>
+        <item quantity="other">Stop playback in %1$d minutes</item>
+    </plurals>
     <string name="coming_up_title">Coming Up Today</string>
     <string name="empty_schedule_text">There are no scheduled events at the moment. Feel free to listen
         to some great tunes while you wait. Tap here to dismiss this message.</string>
-    <string name="share_intent_message">Hey! I\'ve been listening to Rajpath RECalls. You can check it out at rajpathrecalls.github.io/Beta or get the app at play.google.com</string>
+    <string name="share_intent_message">Hey! I\'ve been listening to Rajpath RECalls. You can check
+        it out at rajpathrecalls.web.app or get the app at
+        https://play.google.com/store/apps/details?id=com.nitc.rajpathrecalls</string>
     <string name="message_box_default">Type a message</string>
     <string name="send_content_descrip">edit/send message</string>
+    <string name="bg_video_error_toast">Background video not supported</string>
 </resources>

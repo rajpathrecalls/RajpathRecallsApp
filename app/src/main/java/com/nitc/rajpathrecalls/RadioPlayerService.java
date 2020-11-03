@@ -18,7 +18,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.media.session.MediaSessionCompat;
-import android.util.Log;
 import android.view.KeyEvent;
 
 import androidx.annotation.NonNull;
@@ -82,7 +81,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         mediaSession.setCallback(new MediaSessionCompat.Callback() {
             @Override
             public boolean onMediaButtonEvent(Intent mediaButtonEvent) {
-                KeyEvent keyEvent = (KeyEvent) mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+                KeyEvent keyEvent = mediaButtonEvent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 if (keyEvent != null && keyEvent.getAction() == KeyEvent.ACTION_UP) {
                     togglePlayer(!isPaused);
                 }
@@ -365,7 +364,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     //exoplayer event listener
     @Override
     public void onPlayerError(ExoPlaybackException error) {
-        Log.i("mylog", "Radio Connection Failed: " + error.getMessage());
+//        Log.i("mylog", "Radio Connection Failed: " + error.getMessage());
         error.printStackTrace();
 
         if (temp_switch != null) {      //sync failed. go back to old media player
@@ -380,7 +379,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     //pause when listening
-    private BroadcastReceiver pauseForOutputChange = new BroadcastReceiver() {
+    private final BroadcastReceiver pauseForOutputChange = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction()))
@@ -389,7 +388,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     };
 
     //notification action receiver
-    private BroadcastReceiver notifActionReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver notifActionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (PLAY_PAUSE_ACTION.equals(intent.getAction())) {
