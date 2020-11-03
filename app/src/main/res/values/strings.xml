@@ -19,6 +19,7 @@
     <string name="more_menu_title">More</string>
     <string name="preferences_text">Preferences</string>
     <string name="video_setting_text">Background Video</string>
+    <string name="notification_setting_text">Event Notifications</string>
     <string name="sleep_timer_setting">Sleep Timer</string>
     <string name="contact_us_text">Contact Us</string>
     <string name="instagram_text">Instagram</string>

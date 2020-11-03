@@ -17,8 +17,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.slider.Slider;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class MoreFragment extends Fragment {
 
@@ -31,7 +34,8 @@ public class MoreFragment extends Fragment {
         ((MainActivity) getContext()).current_fragment = this;
         View root = inflater.inflate(R.layout.fragment_more, container, false);
         final SharedPreferences sp = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE);
-        SwitchMaterial background_switch = root.findViewById(R.id.background_switch);
+        SwitchMaterial background_switch = root.findViewById(R.id.background_switch),
+                notification_switch = root.findViewById(R.id.notification_switch);
 
         sleep_switch = root.findViewById(R.id.timer_switch);
         timer_text = root.findViewById(R.id.timer_text);
@@ -43,6 +47,41 @@ public class MoreFragment extends Fragment {
                 sp.edit().putBoolean("background_video_on", isChecked).apply();
             }
         });
+
+        int sleep_state = sp.getInt("event_notifs_on", -1);
+        if (sleep_state == -1) {      //first time opening
+            FirebaseMessaging.getInstance().subscribeToTopic("Events").addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                    sp.edit().putInt("event_notifs_on", 1).apply();
+                }
+            });
+            sleep_state = 1;
+        }
+
+        notification_switch.setChecked(sleep_state == 1);
+        notification_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    FirebaseMessaging.getInstance().subscribeToTopic("Events").addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            sp.edit().putInt("event_notifs_on", 1).apply();
+                        }
+                    });
+
+                } else {
+                    FirebaseMessaging.getInstance().unsubscribeFromTopic("Events").addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            sp.edit().putInt("event_notifs_on", 0).apply();
+                        }
+                    });
+                }
+            }
+        });
+
 
         sleep_switch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -116,7 +155,7 @@ public class MoreFragment extends Fragment {
         slider.addOnChangeListener(new Slider.OnChangeListener() {
             @Override
             public void onValueChange(@NonNull Slider slider, float value, boolean fromUser) {
-                title.setText(getResources().getQuantityString(R.plurals.sleep_dialog_title, (int)value, (int)value));
+                title.setText(getResources().getQuantityString(R.plurals.sleep_dialog_title, (int) value, (int) value));
             }
         });
 
