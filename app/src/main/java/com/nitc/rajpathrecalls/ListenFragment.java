@@ -141,10 +141,10 @@ public class ListenFragment extends Fragment {
             String song_name = intent.getStringExtra("song"),
                     artist_name = intent.getStringExtra("artist");
 
-            if (song_name != null && artist_name != null) {
+            if (!"".equals(song_name) && !"".equals(artist_name)) {
                 if (nowPlayingStarted)
                     updateNowPlayingViews(song_name, artist_name);
-                else
+                else if(song_name != null && artist_name != null)
                     startNowPlayingViews(song_name, artist_name);
             }
         }
@@ -192,6 +192,7 @@ public class ListenFragment extends Fragment {
 
         } else if (sync_state == 1) {      //sync progress
             offset_text.setVisibility(View.GONE);
+            sync_button.setVisibility(View.VISIBLE);
             sync_button.setText(R.string.syncing_text);
             sync_button.setEnabled(false);
             sync_progress.setVisibility(View.VISIBLE);
@@ -238,7 +239,7 @@ public class ListenFragment extends Fragment {
         manager.registerReceiver(playPauseUpdateReceiver, new IntentFilter(RadioPlayerService.PLAY_PAUSE_BROADCAST));
         manager.registerReceiver(nowPlayingUpdateReceiver, new IntentFilter(RadioPlayerService.NOW_PLAYING_BROADCAST));
 
-        if (getRadioPlayer() != null) {
+        if (getRadioPlayer() != null) {     //if fragment loads before service is bound
             //update any view changes that might have happened while fragment paused
             updateViewsOnResume();
         }
@@ -250,15 +251,19 @@ public class ListenFragment extends Fragment {
 
         play_pause_btn.setImageResource(player.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
 
-        if (player.getPlayerOffset() != 0)
-            updateSyncViews(0);  //show sync views
-        else
+        if (player.getPlayerOffset() != 0) {
+            if (player.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS)
+                updateSyncViews(0);     //show sync views
+            else if (player.getConnectionState() == RadioPlayerService.CONNECTION_TRYING)
+                updateSyncViews(1);     //show syncing progress
+        } else {
             updateSyncViews(2);  //disable sync views
+        }
 
         //on closing and reopening fragment
         if (nowPlayingStarted)
             updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
-        else if (player.isPrepared())
+        else if (!"".equals(getRadioPlayer().getNowPlaying()[0]) && !"".equals(getRadioPlayer().getNowPlaying()[1]))
             startNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
     }
 

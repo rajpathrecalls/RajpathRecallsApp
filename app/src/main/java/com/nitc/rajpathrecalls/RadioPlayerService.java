@@ -345,6 +345,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
                 updateConnectionState(CONNECTION_SUCCESS, false);
                 setSyncState(2);
+                updateNowPlaying("", "");
 
                 if (isPaused)
                     togglePlayer(false); //need to update isPaused
