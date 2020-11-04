@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.MenuItem;
@@ -125,8 +126,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         int itemId = item.getItemId();
         if (itemId == R.id.nav_chat) {
             selected = new ChatFragment();
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         } else if (itemId == R.id.nav_more) {
             selected = new MoreFragment();
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         } else {        //default
             selected = new ListenFragment();
         }

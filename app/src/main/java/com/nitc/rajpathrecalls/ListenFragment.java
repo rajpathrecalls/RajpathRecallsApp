@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -12,6 +13,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.transition.TransitionManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -47,6 +49,11 @@ public class ListenFragment extends Fragment {
 
         View fragmentView = inflater.inflate(R.layout.fragment_listen, container, false);
         ((MainActivity) getContext()).current_fragment = this;
+
+        Log.i("mylog", ""+getResources().getDisplayMetrics().heightPixels/getResources().getDisplayMetrics().density);
+        if(getResources().getDisplayMetrics().heightPixels/getResources().getDisplayMetrics().density < 500){
+            getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
 
         boolean background_video_on = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
                 getBoolean("background_video_on", true);
