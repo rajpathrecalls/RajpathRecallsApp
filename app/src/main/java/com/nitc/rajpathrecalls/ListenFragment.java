@@ -92,6 +92,12 @@ public class ListenFragment extends Fragment {
 
         } else {
             background_video.setVisibility(View.GONE);
+            ImageView background = new ImageView(getContext());
+            background.setImageResource(R.drawable.listen_fragment_bg);
+            background.setZ(-1);        //send to back of everything
+            background.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            background.setLayoutParams(background_video.getLayoutParams());
+            ((ConstraintLayout)fragmentView.findViewById(R.id.listen_root)).addView(background);
         }
 
         now_playing_title = fragmentView.findViewById(R.id.now_playing_title);

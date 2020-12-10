@@ -25,8 +25,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/message_fn_button"
         app:layout_constraintStart_toStartOf="parent" >
+
         <aapt:attr name="android:background">
-            <?xml version="1.0" encoding="utf-8"?>
             <shape android:shape="rectangle">
                 <corners android:radius="20dp"/>
                 <solid android:color="@color/colorPrimaryDark"/>
