@@ -75,6 +75,14 @@ public class ListenFragment extends Fragment {
                 public void onPrepared(MediaPlayer mp) {
                     mp.setLooping(true);
                     mp.setVolume(0, 0);
+                    float videoRatio = mp.getVideoWidth() / (float) mp.getVideoHeight();
+                    float screenRatio = background_video.getWidth() / (float) background_video.getHeight();
+                    float scaleX = videoRatio / screenRatio;
+                    if (scaleX >= 1f) {
+                        background_video.setScaleX(scaleX);
+                    } else {
+                        background_video.setScaleY(1f / scaleX);
+                    }
                     mp.start();
                 }
             });
