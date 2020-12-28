@@ -8,12 +8,14 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -104,7 +106,7 @@ public class ChatFragment extends Fragment {
         username = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
                 getString("chat_username", null);
         if (username == null) {
-            username = "Anon_" + (new Random().nextInt(9000) + 1000);
+            username = generateUsername();
         }
 
         message_box.addTextChangedListener(new TextWatcher() {
@@ -232,15 +234,21 @@ public class ChatFragment extends Fragment {
         e.setTextColor(getResources().getColor(R.color.subTextColor));
         e.setHint(username);
         e.setHintTextColor(0xff808080);
+        e.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         e.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorPrimaryHalf)));
         e.setHighlightColor(getResources().getColor(R.color.colorPrimaryHalf));
         float density = getResources().getDisplayMetrics().density;
-        e.setPadding((int) (10 * density), e.getPaddingTop(), (int) (10 * density), e.getPaddingBottom());
         e.setFilters(new InputFilter[]{new InputFilter.LengthFilter(30)});
 
-        dialog.setView(e);
+        LinearLayout l = new LinearLayout(getContext());
+        l.setOrientation(LinearLayout.VERTICAL);
+        l.setPadding((int) (22 * density), 0, (int) (22 * density), 0);
+        l.addView(e);
+
+        dialog.setView(l);
         dialog.setPositiveButton(R.string.okay_text, null);
         dialog.setNegativeButton(R.string.cancel_text, null);
+        dialog.setNeutralButton(R.string.random_text, null);
 
         final AlertDialog shown = dialog.show();
         shown.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
@@ -267,8 +275,30 @@ public class ChatFragment extends Fragment {
             }
         });
 
+        shown.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                e.setText(generateUsername());
+            }
+        });
     }
 
+    private String generateUsername() {
+
+        String[] adjectives = new String[]{"Amiable", "Boisterous", "Diplomatic", "Dynamic", "Chatty",
+                "Tasty", "Bright", "Tense", "Unseemly", "Flimsy", "Energetic", "Dashing", "Anxious",
+                "Ancient", "Miniature", "Messy", "Confident", "Fancy", "Cautious", "Macho", "Electric",
+                "Royal", "Polite", "Truthful", "Responsible", "Sneaky", "Delightful", "Reasonable",
+                "Divergent", "Educated"};
+
+        String[] animals = new String[]{"Bunny", "Tiger", "Rooster", "Chameleon", "Puppy", "Elephant",
+                "Snake", "Alpaca", "Panda", "Antelope", "Giraffe", "Moose", "Jaguar", "Penguin",
+                "Hippo", "Panther", "Crow", "Squirrel", "Wolf", "Zebra", "Toad", "Koala", "Octopus",
+                "Dolphin", "Mongoose", "Kitty", "Mouse", "Spider", "Unicorn", "Phoenix"};
+
+        Random r = new Random();
+        return adjectives[r.nextInt(30)] + animals[r.nextInt(30)];
+    }
 
     @Override
     public void onPause() {

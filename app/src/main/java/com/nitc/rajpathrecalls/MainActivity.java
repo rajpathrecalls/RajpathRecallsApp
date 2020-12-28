@@ -19,6 +19,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity implements BottomNavigationView.OnNavigationItemSelectedListener {
 
@@ -26,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     RadioPlayerService radioPlayerService;
     private BottomNavigationView navBar;
     private boolean isConnectingSnackbarActive = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +48,12 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
             goToFragment(new ListenFragment());
         }
         bindService(playerIntent, serviceConnection, BIND_AUTO_CREATE);
+
+        DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("ActiveUsers").push();
+        Map<String, String> new_child = new HashMap<>();
+        new_child.put("platform", "app");
+        databaseRef.setValue(new_child);
+        databaseRef.onDisconnect().removeValue();
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {

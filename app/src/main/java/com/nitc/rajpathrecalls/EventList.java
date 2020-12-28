@@ -94,13 +94,13 @@ public class EventList {
 
 
     void populate() {
-        mdata.addListenerForSingleValueEvent(new ValueEventListener() {
+        mdata.child("Schedule").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 Date now = Calendar.getInstance().getTime();
                 events = new LinkedList<>();
-                for (DataSnapshot s : snapshot.child("Schedule").getChildren()) {
+                for (DataSnapshot s : snapshot.getChildren()) {
                     Event e = s.getValue(Event.class);
                     if (e != null && now.before(e.when))
                         events.add(e);

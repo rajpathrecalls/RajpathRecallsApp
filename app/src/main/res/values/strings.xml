@@ -48,4 +48,5 @@
     <string name="message_box_default">Type a message</string>
     <string name="send_content_descrip">edit/send message</string>
     <string name="bg_video_error_toast">Background video not supported</string>
+    <string name="random_text">RANDOM</string>
 </resources>
