@@ -20,7 +20,6 @@ import androidx.core.view.GravityCompat;
 
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -34,9 +33,6 @@ import java.util.TimeZone;
 public class EventList {
 
     private final int[] EVENT_COLOURS = new int[]{0xff553d36, 0xff684a52, 0xff857885, 0xff87a0b2, 0xff6c9a8b};
-
-    private final DatabaseReference mdata;
-
     private final LinearLayout root;
     private LinkedList<Event> events;
 
@@ -89,12 +85,11 @@ public class EventList {
         Event.sdf.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
 
         root = layout;
-        mdata = FirebaseDatabase.getInstance().getReference();
     }
 
 
     void populate() {
-        mdata.child("Schedule").addListenerForSingleValueEvent(new ValueEventListener() {
+        FirebaseDatabase.getInstance().getReference().child("Schedule").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
