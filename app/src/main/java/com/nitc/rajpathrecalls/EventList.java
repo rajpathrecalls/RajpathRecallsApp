@@ -1,6 +1,7 @@
 package com.nitc.rajpathrecalls;
 
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.PorterDuff;
 import android.os.Build;
 import android.text.SpannableString;
@@ -124,6 +125,9 @@ public class EventList {
                 } else {
                     View message = root.getChildAt(0);
                     message.setVisibility(View.VISIBLE);
+                    ViewGroup.LayoutParams lp = message.getLayoutParams();
+                    lp.width = Resources.getSystem().getDisplayMetrics().widthPixels -
+                            (int) (60 * Resources.getSystem().getDisplayMetrics().density);
                     message.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {

@@ -105,7 +105,7 @@ public class ListenFragment extends Fragment {
             background.setZ(-1);        //send to back of everything
             background.setScaleType(ImageView.ScaleType.CENTER_CROP);
             background.setLayoutParams(background_video.getLayoutParams());
-            ((ConstraintLayout)fragmentView.findViewById(R.id.listen_root)).addView(background);
+            ((ConstraintLayout) fragmentView.findViewById(R.id.listen_root)).addView(background);
         }
 
         now_playing_title = fragmentView.findViewById(R.id.now_playing_title);
@@ -130,13 +130,12 @@ public class ListenFragment extends Fragment {
     private final View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (!getRadioPlayer().isPrepared()) {
-                getRadioPlayer().connectToRadio();
-                ((MainActivity) getContext()).showConnectingSnackbar();
-            }
-
             if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
                 getRadioPlayer().togglePlayer(!getRadioPlayer().isPaused());
+
+            } else if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_FAILED) {
+                getRadioPlayer().beginRadio();
+                ((MainActivity) getContext()).showConnectingSnackbar();
             }
         }
     };
@@ -162,7 +161,7 @@ public class ListenFragment extends Fragment {
             String song_name = intent.getStringExtra("song"),
                     artist_name = intent.getStringExtra("artist");
 
-            if (!"".equals(song_name) && !"".equals(artist_name)) {
+            if (!"".equals(song_name) || !"".equals(artist_name)) {
                 if (nowPlayingStarted)
                     updateNowPlayingViews(song_name, artist_name);
                 else if (song_name != null && artist_name != null)
@@ -284,7 +283,7 @@ public class ListenFragment extends Fragment {
         //on closing and reopening fragment
         if (nowPlayingStarted)
             updateNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
-        else if (!"".equals(getRadioPlayer().getNowPlaying()[0]) && !"".equals(getRadioPlayer().getNowPlaying()[1]))
+        else if (!"".equals(getRadioPlayer().getNowPlaying()[0]) || !"".equals(getRadioPlayer().getNowPlaying()[1]))
             startNowPlayingViews(player.getNowPlaying()[0], player.getNowPlaying()[1]);
     }
 

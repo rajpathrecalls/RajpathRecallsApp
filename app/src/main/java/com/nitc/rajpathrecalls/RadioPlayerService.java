@@ -33,6 +33,10 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -47,7 +51,7 @@ import java.util.TimerTask;
 public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
     private boolean isPaused = true, listenForPlayerReady = false, isPrepared = false;
-    private String now_playing_song = "", now_playing_artist = "";
+    private String now_playing_song = "", now_playing_artist = "", mediaLink, infoLink;
     private long player_offset = 0, player_offset_start = -1;
     private SimpleExoPlayer mediaPlayer, temp_switch = null;
     private int connection_state = CONNECTION_FAILED;
@@ -177,10 +181,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return isPaused;
     }
 
-    boolean isPrepared() {
-        return isPrepared;
-    }
-
     boolean isSleepTimer() {
         return sleep_handler != null;
     }
@@ -291,6 +291,37 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         sendLocalBroadcast(intent);
     }
 
+    void beginRadio() {
+        FirebaseDatabase.getInstance().getReference().child("Links").child("mediaLink").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                mediaLink = (String) snapshot.getValue();
+
+                if (isPrepared) {
+                    syncToRadio();
+                } else {
+                    connectToRadio();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+            }
+        });
+
+        FirebaseDatabase.getInstance().getReference().child("Links").child("infoLink").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                infoLink = (String) snapshot.getValue();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+    }
+
     void connectToRadio() {
         //get redirect url
         new Thread(new Runnable() {
@@ -300,7 +331,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 updateConnectionState(CONNECTION_TRYING, false);
                 try {
                     HttpURLConnection ucon = (HttpURLConnection)
-                            new URL("https://stream.zeno.fm/2ce1nx83g2zuv").openConnection();
+                            new URL(mediaLink).openConnection();
                     myurl = ucon.getHeaderField("Location");
                     if (!"https".equals(myurl.substring(0, 5)))
                         myurl = "https" + myurl.substring(4);
@@ -366,7 +397,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     @Override
     public void onPlayerError(ExoPlaybackException error) {
 //        Log.i("mylog", "Radio Connection Failed: " + error.getMessage());
-        error.printStackTrace();
 
         if (temp_switch != null) {      //sync failed. go back to old media player
             mediaPlayer.release();
@@ -405,7 +435,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             @Override
             public void run() {
                 try {
-                    Document document = Jsoup.connect("https://zeno.fm/rajpath-recalls/").get();
+                    Document document = Jsoup.connect(infoLink).get();
                     Elements song_element = document.getElementsByClass("radio-song "),
                             artist_element = document.getElementsByClass("radio-artist ");
 

@@ -160,7 +160,7 @@
                 android:layout_height="wrap_content" />
 
             <TextView
-                android:layout_width="330dp"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textColor="@color/subTextColor"
                 android:textSize="13.5sp"
