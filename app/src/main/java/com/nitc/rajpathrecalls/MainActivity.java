@@ -51,7 +51,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
 
         DatabaseReference databaseRef = FirebaseDatabase.getInstance().getReference().child("ActiveUsers").push();
         Map<String, String> new_child = new HashMap<>();
-        new_child.put("platform", "app");
+        new_child.put("platform", "app v" + BuildConfig.VERSION_NAME);
         databaseRef.setValue(new_child);
         databaseRef.onDisconnect().removeValue();
     }
