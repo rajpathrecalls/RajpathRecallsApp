@@ -50,7 +50,7 @@ import java.util.TimerTask;
 
 public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
-    private boolean isPaused = true, listenForPlayerReady = false, isPrepared = false;
+    private boolean isPaused = true, listenForPlayerReady = false, isPrepared = false, pendingSync = false;
     private String now_playing_song = "", now_playing_artist = "", mediaLink, infoLink;
     private long player_offset = 0, player_offset_start = -1;
     private SimpleExoPlayer mediaPlayer, temp_switch = null;
@@ -298,7 +298,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 mediaLink = (String) snapshot.getValue();
 
                 if (isPrepared) {
-                    syncToRadio();
+                    if (temp_switch == null)
+                        syncToRadio();
+                    else
+                        pendingSync = true;
+
                 } else {
                     connectToRadio();
                 }
@@ -317,7 +321,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-
             }
         });
     }
@@ -382,6 +385,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                     togglePlayer(false); //need to update isPaused
                 else
                     mediaPlayer.play();        //no need to update
+
+                if (pendingSync) {        //link update in the middle of sync will be pending
+                    pendingSync = false;
+                    syncToRadio();
+                }
 
             } else {
                 updateConnectionState(CONNECTION_SUCCESS, true);

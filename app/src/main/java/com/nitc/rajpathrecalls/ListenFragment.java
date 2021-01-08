@@ -164,7 +164,7 @@ public class ListenFragment extends Fragment {
             if (!"".equals(song_name) || !"".equals(artist_name)) {
                 if (nowPlayingStarted)
                     updateNowPlayingViews(song_name, artist_name);
-                else if (song_name != null && artist_name != null)
+                else if (!song_name.contains("Syncing"))
                     startNowPlayingViews(song_name, artist_name);
             }
         }
