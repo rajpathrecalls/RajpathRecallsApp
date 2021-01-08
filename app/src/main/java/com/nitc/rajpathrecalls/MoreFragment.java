@@ -98,10 +98,12 @@ public class MoreFragment extends Fragment {
             }
         });
 
-        root.findViewById(R.id.instagram_button).setOnClickListener(social_listener);
-        root.findViewById(R.id.facebook_button).setOnClickListener(social_listener);
-        root.findViewById(R.id.github_button).setOnClickListener(social_listener);
-        root.findViewById(R.id.mail_button).setOnClickListener(social_listener);
+        root.findViewById(R.id.instagram_button).setOnClickListener(linkOpenListener);
+        root.findViewById(R.id.facebook_button).setOnClickListener(linkOpenListener);
+        root.findViewById(R.id.github_button).setOnClickListener(linkOpenListener);
+        root.findViewById(R.id.mail_button).setOnClickListener(linkOpenListener);
+        root.findViewById(R.id.review_button).setOnClickListener(linkOpenListener);
+        root.findViewById(R.id.form_button).setOnClickListener(linkOpenListener);
 
         root.findViewById(R.id.share_button).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -114,12 +116,13 @@ public class MoreFragment extends Fragment {
             }
         });
 
+
         TextView version_text = root.findViewById(R.id.version_text);
         version_text.setText(BuildConfig.VERSION_NAME);
         return root;
     }
 
-    private final View.OnClickListener social_listener = new View.OnClickListener() {
+    private final View.OnClickListener linkOpenListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             String link = null;
@@ -132,6 +135,10 @@ public class MoreFragment extends Fragment {
                 link = "https://github.com/rajpathrecalls/";
             } else if (id == R.id.mail_button) {
                 link = "mailto:rajpathrecalls@gmail.com";
+            } else if (id == R.id.review_button) {
+                link = "https://play.google.com/store/apps/details?id=com.nitc.rajpathrecalls";
+            } else if (id == R.id.form_button) {
+                link = "https://forms.gle/ZnMw9rX1yKfxeNBS6";
             }
             Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(link));
             startActivity(launchIntent);

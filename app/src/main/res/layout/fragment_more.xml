@@ -10,13 +10,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layoutAnimation="@anim/layout_anim_slide_down"
+        android:orientation="vertical"
         android:padding="20dp">
 
         <ImageView
             android:layout_width="match_parent"
-            android:layout_height="200dp"
+            android:layout_height="150dp"
             android:src="@drawable/splash_image"
             android:contentDescription="@string/app_name" />
 
@@ -26,14 +26,13 @@
             android:text="@string/preferences_text"
             android:layout_marginTop="40dp"
             android:textSize="15.5sp"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorAccent"
             android:fontFamily="@font/montserrat_semibold" />
 
         <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/background_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="1dp"
             android:text="@string/video_setting_text"
             android:textColor="@color/colorPrimary"
             android:textSize="14.5sp"
@@ -43,7 +42,6 @@
             android:id="@+id/notification_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="1dp"
             android:text="@string/notification_setting_text"
             android:textColor="@color/colorPrimary"
             android:textSize="14.5sp"
@@ -56,7 +54,6 @@
             android:textSize="14.5sp"
             app:trackTint="@color/switch_track_color"
             android:textColor="@color/colorPrimary"
-            android:layout_marginStart="1dp"
             android:text="@string/sleep_timer_setting" />
 
         <TextView
@@ -75,8 +72,23 @@
             android:layout_marginTop="10dp"
             android:text="@string/contact_us_text"
             android:textSize="15.5sp"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorAccent"
             android:fontFamily="@font/montserrat_semibold" />
+
+        <TextView
+            android:id="@+id/form_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14.5sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="Send In Your Suggestions"
+            app:drawableRightCompat="@drawable/ic_form" />
 
         <TextView
             android:id="@+id/instagram_button"
@@ -123,32 +135,14 @@
             android:text="@string/mail_text"
             app:drawableRightCompat="@drawable/ic_mail" />
 
-
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:text="@string/about_text"
+            android:text="Actions"
             android:textSize="15.5sp"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorAccent"
             android:fontFamily="@font/montserrat_semibold" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="14.5sp"
-            android:layout_marginTop="5dp"
-            android:textColor="@color/colorPrimary"
-            android:layout_marginStart="1dp"
-            android:text="@string/build_version_text" />
-
-        <TextView
-            android:id="@+id/version_text"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="1dp"
-            android:textColor="@color/subTextColor"
-            android:textSize="12sp" />
 
         <TextView
             android:id="@+id/share_button"
@@ -166,6 +160,21 @@
             app:drawableRightCompat="@drawable/ic_share" />
 
         <TextView
+            android:id="@+id/review_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14.5sp"
+            android:paddingVertical="5dp"
+            android:paddingEnd="5dp"
+            android:paddingStart="1dp"
+            android:gravity="center_vertical"
+            android:background="@drawable/ripple_bg"
+            app:drawableTint="@color/colorPrimary"
+            android:textColor="@color/colorPrimary"
+            android:text="Leave A Review"
+            app:drawableRightCompat="@drawable/ic_review" />
+
+        <TextView
             android:id="@+id/github_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -180,6 +189,31 @@
             android:text="@string/contribute_text"
             app:drawableRightCompat="@drawable/ic_github" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/about_text"
+            android:textSize="15.5sp"
+            android:textColor="@color/colorAccent"
+            android:fontFamily="@font/montserrat_semibold" />
+
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14.5sp"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/colorPrimary"
+            android:text="@string/build_version_text" />
+
+        <TextView
+            android:id="@+id/version_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="1dp"
+            android:textColor="@color/subTextColor"
+            android:textSize="12sp" />
     </LinearLayout>
 
 </ScrollView>
