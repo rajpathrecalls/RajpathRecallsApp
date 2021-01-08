@@ -15,7 +15,6 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.core.view.GravityCompat;
 
@@ -24,12 +23,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedList;
-import java.util.TimeZone;
 
 public class EventList {
 
@@ -37,69 +34,38 @@ public class EventList {
     private final LinearLayout root;
     private LinkedList<Event> events;
 
-    @Keep       //dont change name while minifying
     static class Event {
-        private String title, sub_title;
-        private Date when;
+        String title, sub_title;
+        Date time;
 
-        //set to ist timezone in event list constructor (since event times are in ist)
-        private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-
-        //For Firebase
-        public Event() {
-
-        }
-
-        //DO NOT CHANGE FOLLOWING METHOD NAMES [firebase names]
-        public void setWhen(String when_string) {
-            try {
-                when = sdf.parse(when_string);
-            } catch (ParseException e) {
-                when = null;
-            }
-        }
-
-        public Date getWhen() {
-            return when;
-        }
-
-        public void setMain(String main) {
-            title = main;
-        }
-
-        public String getMain() {
-            return title;
-        }
-
-        public void setSub(String sub) {
-            sub_title = sub;
-        }
-
-        public String getSub() {
-            return sub_title;
+        Event(String title, String sub_title, Long timestamp) {
+            this.title = title;
+            this.sub_title = sub_title;
+            time = new Date(timestamp);
         }
     }
 
     EventList(LinearLayout layout) {
-
-        //event times are in ist
-        Event.sdf.setTimeZone(TimeZone.getTimeZone("GMT+5:30"));
-
         root = layout;
     }
-
 
     void populate() {
         FirebaseDatabase.getInstance().getReference().child("Schedule").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
                 Date now = Calendar.getInstance().getTime();
                 events = new LinkedList<>();
                 for (DataSnapshot s : snapshot.getChildren()) {
-                    Event e = s.getValue(Event.class);
-                    if (e != null && now.before(e.when))
-                        events.add(e);
+                    Long timestamp = (Long) s.child("time").getValue();
+                    String main = (String) s.child("main").getValue(), sub = (String) s.child("sub").getValue();
+                    if (timestamp == null || main == null || sub == null)
+                        continue;
+                    Date event_time = new Date(timestamp);
+                    if (sdf.format(now).equals(sdf.format(event_time)) && now.before(event_time)) {
+                        events.add(new Event(main, sub, timestamp));
+                    }
                 }
 
                 TransitionManager.beginDelayedTransition((ViewGroup) root.getParent().getParent());
@@ -118,8 +84,7 @@ public class EventList {
 
                     int currentColor = 0;
                     for (Event event : events) {
-                        if (event.getWhen() != null)
-                            root.addView(createEventView(event, EVENT_COLOURS[currentColor++ % EVENT_COLOURS.length]));
+                        root.addView(createEventView(event, EVENT_COLOURS[currentColor++ % EVENT_COLOURS.length]));
                     }
 
                 } else {
@@ -157,11 +122,11 @@ public class EventList {
         else
             view_root.setBackgroundTintList(ColorStateList.valueOf(bg_color));
 
-        ((TextView) view_root.findViewById(R.id.event_title)).setText(event.getMain());
-        ((TextView) view_root.findViewById(R.id.event_host)).setText(event.getSub());
+        ((TextView) view_root.findViewById(R.id.event_title)).setText(event.title);
+        ((TextView) view_root.findViewById(R.id.event_host)).setText(event.sub_title);
 
         String time = new SimpleDateFormat("hh:mm aa")
-                .format(event.getWhen())
+                .format(event.time)
                 .replace("AM", "am")
                 .replace("PM", "pm");
         SpannableString time_text = new SpannableString(time);
