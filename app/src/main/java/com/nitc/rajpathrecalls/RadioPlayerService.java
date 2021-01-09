@@ -132,6 +132,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 updatePlayerOffset();
                 registerReceiver(pauseForOutputChange, new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY));
                 setPaused(false);
+                if (pendingSync) {
+                    pendingSync = false;
+                    syncToRadio();
+                }
             }
 
         } else {
@@ -298,7 +302,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 mediaLink = (String) snapshot.getValue();
 
                 if (isPrepared) {
-                    if (temp_switch == null)
+                    if (temp_switch == null && !isPaused)
                         syncToRadio();
                     else
                         pendingSync = true;
