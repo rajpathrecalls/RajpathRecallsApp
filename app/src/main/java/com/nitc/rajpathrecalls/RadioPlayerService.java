@@ -201,6 +201,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return new String[]{now_playing_song, now_playing_artist};
     }
 
+    private boolean isSyncing() {
+        return temp_switch != null;
+    }
+
     private void updatePlayerOffset() {
         if (player_offset_start != -1) {
             long calculated_offset = (System.currentTimeMillis() - player_offset_start) / 1000;
@@ -302,7 +306,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 mediaLink = (String) snapshot.getValue();
 
                 if (isPrepared) {
-                    if (temp_switch == null && !isPaused)
+                    if (!isSyncing() && !isPaused)
                         syncToRadio();
                     else
                         pendingSync = true;
@@ -377,7 +381,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             scraper_timer = new Timer();
             scraper_timer.scheduleAtFixedRate(createScraperTask(), 0, 30000);  //call every 30 seconds
 
-            if (temp_switch != null) {      //sync op
+            if (isSyncing()) {
                 temp_switch.release();
                 temp_switch = null;
 
@@ -410,7 +414,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     public void onPlayerError(ExoPlaybackException error) {
 //        Log.i("mylog", "Radio Connection Failed: " + error.getMessage());
 
-        if (temp_switch != null) {      //sync failed. go back to old media player
+        if (isSyncing()) {      //sync failed. go back to old media player
             mediaPlayer.release();
             mediaPlayer = temp_switch;
             temp_switch = null;
@@ -436,7 +440,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         public void onReceive(Context context, Intent intent) {
             if (PLAY_PAUSE_ACTION.equals(intent.getAction())) {
                 togglePlayer(!isPaused);
-            } else if (SYNC_ACTION.equals(intent.getAction()) && temp_switch == null) {  //if not syncing already
+            } else if (SYNC_ACTION.equals(intent.getAction()) && !isSyncing()) {
                 syncToRadio();
             }
         }
@@ -481,8 +485,8 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-
+        stopForeground(true);
+        FirebaseDatabase.getInstance().goOffline();
         if (!isPaused) {
             unregisterReceiver(pauseForOutputChange);
         }
@@ -490,12 +494,14 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         stopSleepTimer();
         ((AudioManager) getSystemService(Context.AUDIO_SERVICE)).abandonAudioFocus(this);
         unregisterReceiver(notifActionReceiver);
-        if (temp_switch != null)
+        if (isSyncing())
             temp_switch.release();
         mediaPlayer.release();
         mediaSession.release();
 
         if (scraper_timer != null)
             scraper_timer.cancel();
+
+        super.onDestroy();
     }
 }
