@@ -142,7 +142,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             mediaPlayer.pause();
             player_offset_start = System.currentTimeMillis();
             unregisterReceiver(pauseForOutputChange);
-            scraper_timer.cancel();
+            if (scraper_timer != null) {
+                scraper_timer.cancel();
+                scraper_timer = null;
+            }
             setPaused(true);
         }
         makeNotification(true);
@@ -382,8 +385,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
 
         if (listenForPlayerReady && state == SimpleExoPlayer.STATE_READY) {
             listenForPlayerReady = false;
-            scraper_timer = new Timer();
-            scraper_timer.scheduleAtFixedRate(createScraperTask(), 0, 30000);  //call every 30 seconds
+            if (scraper_timer == null) {
+                scraper_timer = new Timer();
+                scraper_timer.scheduleAtFixedRate(createScraperTask(), 0, 30000);  //call every 30 seconds
+            }
 
             if (isSyncing()) {
                 temp_switch.release();
