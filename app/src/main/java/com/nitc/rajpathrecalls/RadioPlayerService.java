@@ -205,8 +205,12 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         return temp_switch != null;
     }
 
+    private boolean isOutOfSync() {
+        return player_offset_start != -1;
+    }
+
     private void updatePlayerOffset() {
-        if (player_offset_start != -1) {
+        if (isOutOfSync()) {
             long calculated_offset = (System.currentTimeMillis() - player_offset_start) / 1000;
             if (calculated_offset == 0)
                 calculated_offset = 1;      //quick pause play taps give one second offset
@@ -458,7 +462,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                     String song_name = song_element.size() > 0 ? song_element.get(0).text() : "",
                             artist_name = artist_element.size() > 0 ? artist_element.get(0).text() : "";
 
-                    if (!song_name.equals(now_playing_song) || !artist_name.equals(now_playing_artist)) {
+
+                    //pausing while the task is running will cause the notification to show up even if paused and discarded
+                    //so an out of sync check is added
+                    if (!isOutOfSync() && !(song_name.equals(now_playing_song) && artist_name.equals(now_playing_artist))) {
                         updateNowPlaying(song_name, artist_name);
                     }
                 } catch (IOException ignored) {
