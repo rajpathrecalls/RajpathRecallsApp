@@ -50,21 +50,24 @@ import java.util.TimerTask;
 
 public class RadioPlayerService extends Service implements AudioManager.OnAudioFocusChangeListener, SimpleExoPlayer.EventListener {
 
-    private boolean isPaused = true, listenForPlayerReady = false, isPrepared = false, pendingSync = false;
-    private String now_playing_song = "", now_playing_artist = "", mediaLink, infoLink;
+    private boolean isPaused = true, listenForPlayerReady = false, pendingSync = false;
+    private String now_playing_song = "", now_playing_artist = "", mediaLink = null, infoLink = null;
     private long player_offset = 0, player_offset_start = -1;
     private SimpleExoPlayer mediaPlayer, temp_switch = null;
-    private int connection_state = CONNECTION_FAILED;
     private MediaSessionCompat mediaSession;
     private Timer scraper_timer;
     private Handler sleep_handler;
     private long sleep_end_time;
+    private ValueEventListener mediaListener, infoListener;
+
+    public enum ConnectionStatus {SUCCESS, TRYING, FAILED}
+
+    private ConnectionStatus connection_state = ConnectionStatus.FAILED;
 
     private final String CHANNEL_ID = "com.rajpathrecalls.notifications",
             PLAY_PAUSE_ACTION = "com.rajpathrecalls.playpause",
             SYNC_ACTION = "com.rajpathrecalls.sync";        //public broadcasts action, so need unique
 
-    static final int CONNECTION_SUCCESS = 1, CONNECTION_TRYING = 2, CONNECTION_FAILED = 3;
     static final String PLAY_PAUSE_BROADCAST = "playpause", CONNECTION_BROADCAST = "connection_update",
             SYNC_BROADCAST = "sync_update", NOW_PLAYING_BROADCAST = "now_playing";     //local broadcast actions
 
@@ -107,7 +110,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     void togglePlayer(boolean shouldPause) {
-        if (connection_state != CONNECTION_SUCCESS || isPaused == shouldPause)
+        if (connection_state != ConnectionStatus.SUCCESS || isPaused == shouldPause)
             return;
 
         if (isPaused) {
@@ -180,7 +183,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         }
     }
 
-    int getConnectionState() {
+    ConnectionStatus getConnectionState() {
         return connection_state;
     }
 
@@ -277,7 +280,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
         sendLocalBroadcast(intent);
     }
 
-    private void updateConnectionState(int new_state, boolean shouldCallback) {
+    private void updateConnectionState(ConnectionStatus new_state, boolean shouldCallback) {
         connection_state = new_state;
         if (!shouldCallback)
             return;
@@ -307,19 +310,28 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     }
 
     void beginRadio() {
-        FirebaseDatabase.getInstance().getReference().child("Links").child("mediaLink").addValueEventListener(new ValueEventListener() {
+        if (mediaListener != null) {
+            connectToRadio();
+            return;
+        }
+
+        mediaListener = FirebaseDatabase.getInstance().getReference().child("Links").child("mediaLink").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                boolean isFirstCall = (mediaLink == null);
                 mediaLink = (String) snapshot.getValue();
 
-                if (isPrepared) {
-                    if (!isSyncing() && !isPaused)
-                        syncToRadio();
-                    else
-                        pendingSync = true;
+                if (pendingSync)
+                    return;
 
-                } else {
-                    connectToRadio();
+                if (connection_state == ConnectionStatus.FAILED) {
+                    if (isFirstCall) {
+                        connectToRadio();
+                    }
+                } else if (connection_state == ConnectionStatus.TRYING || isPaused) {
+                    pendingSync = true;
+                } else if (connection_state == ConnectionStatus.SUCCESS) {
+                    syncToRadio();
                 }
             }
 
@@ -328,7 +340,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             }
         });
 
-        FirebaseDatabase.getInstance().getReference().child("Links").child("infoLink").addValueEventListener(new ValueEventListener() {
+        infoListener = FirebaseDatabase.getInstance().getReference().child("Links").child("infoLink").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 infoLink = (String) snapshot.getValue();
@@ -346,7 +358,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             @Override
             public void run() {
                 String myurl;
-                updateConnectionState(CONNECTION_TRYING, false);
+                updateConnectionState(ConnectionStatus.TRYING, false);
                 try {
                     HttpURLConnection ucon = (HttpURLConnection)
                             new URL(mediaLink).openConnection();
@@ -394,7 +406,7 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 temp_switch.release();
                 temp_switch = null;
 
-                updateConnectionState(CONNECTION_SUCCESS, false);
+                updateConnectionState(ConnectionStatus.SUCCESS, false);
                 setSyncState(2);
                 updateNowPlaying("", "");
 
@@ -403,17 +415,15 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
                 else
                     mediaPlayer.play();        //no need to update
 
-                if (pendingSync) {        //link update in the middle of sync will be pending
-                    pendingSync = false;
-                    syncToRadio();
-                }
-
             } else {
-                updateConnectionState(CONNECTION_SUCCESS, true);
-                if (!isPrepared) {
-                    togglePlayer(false);
-                    isPrepared = true;
-                }
+                //first start
+                updateConnectionState(ConnectionStatus.SUCCESS, true);
+                togglePlayer(false);
+            }
+
+            if (pendingSync) {        //link update in the middle of sync will be pending
+                pendingSync = false;
+                syncToRadio();
             }
         }
     }
@@ -427,10 +437,10 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             mediaPlayer.release();
             mediaPlayer = temp_switch;
             temp_switch = null;
-            updateConnectionState(CONNECTION_SUCCESS, false); //old player is connected
+            updateConnectionState(ConnectionStatus.SUCCESS, false); //old player is connected
             setSyncState(0);
         } else {
-            updateConnectionState(CONNECTION_FAILED, true);
+            updateConnectionState(ConnectionStatus.FAILED, true);
         }
     }
 
@@ -509,6 +519,13 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             temp_switch.release();
         mediaPlayer.release();
         mediaSession.release();
+
+        if (mediaListener != null) {
+            FirebaseDatabase.getInstance().getReference().child("Links").child("mediaLink").removeEventListener(mediaListener);
+        }
+        if (infoListener != null) {
+            FirebaseDatabase.getInstance().getReference().child("Links").child("infoLink").removeEventListener(infoListener);
+        }
 
         if (scraper_timer != null)
             scraper_timer.cancel();

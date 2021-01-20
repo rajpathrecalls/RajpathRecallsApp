@@ -76,9 +76,10 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
     private final BroadcastReceiver connectionUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            int connection_status = intent.getIntExtra(RadioPlayerService.CONNECTION_BROADCAST, -1);
+            RadioPlayerService.ConnectionStatus connection_status =
+                    (RadioPlayerService.ConnectionStatus) intent.getSerializableExtra(RadioPlayerService.CONNECTION_BROADCAST);
 
-            if (connection_status == RadioPlayerService.CONNECTION_FAILED) {
+            if (connection_status == RadioPlayerService.ConnectionStatus.FAILED) {
                 showSnackbar(getString(R.string.connection_failed_text), Snackbar.LENGTH_INDEFINITE,
                         getString(R.string.retry_text), new View.OnClickListener() {
                             @Override
@@ -87,7 +88,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
                             }
                         });
 
-            } else if (connection_status == RadioPlayerService.CONNECTION_SUCCESS) {
+            } else if (connection_status == RadioPlayerService.ConnectionStatus.SUCCESS) {
                 showConnectedSnackbar();
             }
         }
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         LocalBroadcastManager.getInstance(this).registerReceiver(syncUpdateReceiver,
                 new IntentFilter(RadioPlayerService.SYNC_BROADCAST));
 
-        if (isConnectingSnackbarActive && radioPlayerService.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
+        if (isConnectingSnackbarActive && radioPlayerService.getConnectionState() == RadioPlayerService.ConnectionStatus.SUCCESS) {
             showConnectedSnackbar();
         }
     }

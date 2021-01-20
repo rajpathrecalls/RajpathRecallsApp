@@ -34,6 +34,8 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
+import java.util.Random;
+
 public class ListenFragment extends Fragment {
 
     private ImageView play_pause_btn;
@@ -101,7 +103,15 @@ public class ListenFragment extends Fragment {
         } else {
             background_video.setVisibility(View.GONE);
             ImageView background = new ImageView(getContext());
-            background.setImageResource(R.drawable.listen_fragment_bg);
+            int image_choice = new Random().nextInt(3), imageResId;
+            if (image_choice == 0)
+                imageResId = R.drawable.listen_fragment_bg_1;
+            else if (image_choice == 1)
+                imageResId = R.drawable.listen_fragment_bg_2;
+            else
+                imageResId = R.drawable.listen_fragment_bg_3;
+
+            background.setImageResource(imageResId);
             background.setZ(-1);        //send to back of everything
             background.setScaleType(ImageView.ScaleType.CENTER_CROP);
             background.setLayoutParams(background_video.getLayoutParams());
@@ -130,10 +140,10 @@ public class ListenFragment extends Fragment {
     private final View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS) {
+            if (getRadioPlayer().getConnectionState() == RadioPlayerService.ConnectionStatus.SUCCESS) {
                 getRadioPlayer().togglePlayer(!getRadioPlayer().isPaused());
 
-            } else if (getRadioPlayer().getConnectionState() == RadioPlayerService.CONNECTION_FAILED) {
+            } else if (getRadioPlayer().getConnectionState() == RadioPlayerService.ConnectionStatus.FAILED) {
                 getRadioPlayer().beginRadio();
                 ((MainActivity) getContext()).showConnectingSnackbar();
             }
@@ -272,9 +282,9 @@ public class ListenFragment extends Fragment {
         play_pause_btn.setImageResource(player.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
 
         if (player.getPlayerOffset() != 0) {
-            if (player.getConnectionState() == RadioPlayerService.CONNECTION_SUCCESS)
+            if (player.getConnectionState() == RadioPlayerService.ConnectionStatus.SUCCESS)
                 updateSyncViews(0);     //show sync views
-            else if (player.getConnectionState() == RadioPlayerService.CONNECTION_TRYING)
+            else if (player.getConnectionState() == RadioPlayerService.ConnectionStatus.TRYING)
                 updateSyncViews(1);     //show syncing progress
         } else {
             updateSyncViews(2);  //disable sync views
