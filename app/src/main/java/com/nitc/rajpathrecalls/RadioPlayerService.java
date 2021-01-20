@@ -498,7 +498,6 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
     @Override
     public void onDestroy() {
         stopForeground(true);
-        FirebaseDatabase.getInstance().goOffline();
         if (!isPaused) {
             unregisterReceiver(pauseForOutputChange);
         }
