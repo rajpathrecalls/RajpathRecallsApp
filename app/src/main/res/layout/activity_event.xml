@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/event_bg"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#a0000000"
+    android:padding="40dp"
+    tools:context=".EventActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:scrollbars="none"
+        tools:ignore="UselessParent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/event_fg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingBottom="15dp">
+
+            <aapt:attr name="android:background">
+                <shape>
+                    <solid android:color="#272727" />
+                    <corners android:radius="10dp" />
+                </shape>
+            </aapt:attr>
+
+            <ImageView
+                android:id="@+id/event_image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:scaleType="centerCrop"
+                android:src="@drawable/listen_fragment_bg_2"
+                android:transitionName="eventImage"
+                app:layout_constraintDimensionRatio="H1,1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="ContentDescription"
+                tools:srcCompat="@tools:sample/avatars">
+                <aapt:attr name="android:background">
+                    <shape>
+                        <corners
+                            android:topLeftRadius="10dp"
+                            android:topRightRadius="10dp" />
+                    </shape>
+                </aapt:attr>
+            </ImageView>
+
+            <TextView
+                android:id="@+id/event_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="5dp"
+                android:fontFamily="@font/montserrat_semibold"
+                android:labelFor="@id/event_image"
+                android:text="BruhTime"
+                android:textColor="@color/colorAccent"
+                android:textSize="19sp"
+                app:layout_constraintEnd_toStartOf="@+id/share_button"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/event_image" />
+
+            <TextView
+                android:id="@+id/event_host"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/montserrat_medium"
+                android:text="RJ Mann"
+                android:textColor="@color/colorAccentHalf"
+                android:textSize="15sp"
+                app:layout_constraintEnd_toEndOf="@+id/event_title"
+                app:layout_constraintStart_toStartOf="@+id/event_title"
+                app:layout_constraintTop_toBottomOf="@+id/event_title" />
+
+            <TextView
+                android:id="@+id/event_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:autoLink="web"
+                android:fontFamily="@font/montserrat_regular"
+                android:justificationMode="inter_word"
+                android:textColor="@color/subTextColor"
+                android:textSize="13.5sp"
+                app:layout_constraintEnd_toEndOf="@+id/share_button"
+                app:layout_constraintStart_toStartOf="@+id/event_title"
+                app:layout_constraintTop_toBottomOf="@+id/event_host"
+                tools:targetApi="o" />
+
+            <ImageButton
+                android:id="@+id/share_button"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginEnd="15dp"
+                android:layout_marginBottom="2dp"
+                android:padding="9dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_instagram"
+                android:tint="#ffffff"
+                app:layout_constraintBottom_toBottomOf="@+id/event_host"
+                app:layout_constraintDimensionRatio="W,1:1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/event_title"
+                android:contentDescription="instagram story">
+
+                <aapt:attr name="android:background">
+                    <shape android:shape="oval">
+                        <gradient
+                            android:angle="45"
+                            android:centerColor="#b0dd2a7b"
+                            android:endColor="#b08134af"
+                            android:startColor="#b0feda77" />
+                    </shape>
+                </aapt:attr>
+            </ImageButton>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+</FrameLayout>

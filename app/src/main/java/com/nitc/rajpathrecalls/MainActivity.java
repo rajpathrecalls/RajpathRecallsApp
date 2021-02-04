@@ -141,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements BottomNavigationV
         } else if (itemId == R.id.nav_more) {
             selected = new MoreFragment();
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+        } else if (itemId == R.id.nav_events) {
+            selected = new EventsFragment();
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
         } else {        //default
             selected = new ListenFragment();
         }

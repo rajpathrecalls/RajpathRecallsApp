@@ -11,6 +11,11 @@
         android:title="@string/chat_menu_title" />
 
     <item
+        android:id="@+id/nav_events"
+        android:icon="@drawable/menu_ic_events"
+        android:title="@string/events_menu_title" />
+
+    <item
         android:id="@+id/nav_more"
         android:icon="@drawable/menu_ic_more"
         android:title="@string/more_menu_title" />

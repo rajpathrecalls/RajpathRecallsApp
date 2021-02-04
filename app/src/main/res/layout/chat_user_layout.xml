@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="#000000"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="#000000">
 
     <TextView
         android:id="@+id/sender"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:layout_marginEnd="10dp"
         android:fontFamily="@font/montserrat_semibold"
         android:maxLines="1"
         android:text="Anon#1355"
-        android:layout_marginTop="12dp"
         android:textColor="@android:color/white"
         android:textSize="15sp"
         app:layout_constraintEnd_toStartOf="@+id/time"
@@ -27,10 +25,11 @@
         android:id="@+id/message"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autoLink="web"
         android:text="Bruhthacular!"
         android:textColor="@color/subTextColor"
         android:textSize="14.5sp"
-        app:layout_constraintTop_toBottomOf="@+id/sender"/>
+        app:layout_constraintTop_toBottomOf="@+id/sender" />
 
 
     <TextView

@@ -49,4 +49,6 @@
     <string name="send_content_descrip">edit/send message</string>
     <string name="bg_video_error_toast">Background video not supported</string>
     <string name="random_text">RANDOM</string>
+    <string name="events_menu_title">Events</string>
+    <string name="event_fragment_title">Our Events</string>
 </resources>
