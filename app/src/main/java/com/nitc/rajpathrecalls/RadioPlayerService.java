@@ -471,12 +471,11 @@ public class RadioPlayerService extends Service implements AudioManager.OnAudioF
             public void run() {
                 try {
                     Document document = Jsoup.connect(infoLink).get();
-                    Elements song_element = document.getElementsByClass("radio-song "),
-                            artist_element = document.getElementsByClass("radio-artist ");
+                    Elements song_element = document.getElementsByClass("radio-song"),
+                            artist_element = document.getElementsByClass("radio-artist");
 
                     String song_name = song_element.size() > 0 ? song_element.get(0).text() : "",
                             artist_name = artist_element.size() > 0 ? artist_element.get(0).text() : "";
-
 
                     //pausing while the task is running will cause the notification to show up even if paused and discarded
                     //so an out of sync check is added
