@@ -34,16 +34,22 @@ import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.vectordrawable.graphics.drawable.AnimatedVectorDrawableCompat;
 
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 import java.util.Random;
 
 public class ListenFragment extends Fragment {
 
-    private ImageView play_pause_btn;
-    private TextView offset_text, now_playing_title;
-    private Button sync_button;
-    private ProgressBar sync_progress;
-    private TextSwitcher now_song_view;
-    private boolean nowPlayingStarted = false;
+    private ImageView playPauseBtn;
+    private TextView offsetText, nowPlayingTitle;
+    private Button syncButton, liveFeedButton;
+    private ProgressBar syncProgress;
+    private TextSwitcher nowSongView;
+    private boolean nowPlayingStarted = false, liveFeedActive = false;
 
     @Nullable
     @Override
@@ -61,38 +67,63 @@ public class ListenFragment extends Fragment {
         if (dimension < 500)
             getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
+        configureBackground(fragmentView);
+
+        nowPlayingTitle = fragmentView.findViewById(R.id.now_playing_title);
+        nowSongView = fragmentView.findViewById(R.id.song_name_view);
+        nowSongView.setInAnimation(getContext(), android.R.anim.slide_in_left);
+        nowSongView.setOutAnimation(getContext(), android.R.anim.slide_out_right);
+
+        playPauseBtn = fragmentView.findViewById(R.id.play_pause_view);
+        offsetText = fragmentView.findViewById(R.id.offset_text);
+        syncButton = fragmentView.findViewById(R.id.sync_button);
+        syncProgress = fragmentView.findViewById(R.id.sync_progress);
+        liveFeedButton = fragmentView.findViewById(R.id.live_feed_button);
+
+        playPauseBtn.setOnClickListener(onPlayPauseClick);
+        syncButton.setOnClickListener(onSyncClick);
+
+        EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list));
+        e.populate();
+
+        FirebaseDatabase.getInstance().getReference().child("LiveFeed").addListenerForSingleValueEvent(feedListener);
+
+        return fragmentView;
+    }
+
+    void configureBackground(View root) {
+        final VideoView backgroundVideo = root.findViewById(R.id.videoView);
         boolean background_video_on = getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).
                 getBoolean("background_video_on", true);
 
-        final VideoView background_video = fragmentView.findViewById(R.id.videoView);
         if (background_video_on) {
-            background_video.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
+            backgroundVideo.setVideoURI(Uri.parse("android.resource://" + getContext().getPackageName()
                     + "/" + R.raw.bg_video));
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                background_video.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE);
+                backgroundVideo.setAudioFocusRequest(AudioManager.AUDIOFOCUS_NONE);
             }
-            background_video.start();
-            background_video.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            backgroundVideo.start();
+            backgroundVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     mp.setLooping(true);
                     mp.setVolume(0, 0);
                     float videoRatio = mp.getVideoWidth() / (float) mp.getVideoHeight();
-                    float screenRatio = background_video.getWidth() / (float) background_video.getHeight();
+                    float screenRatio = backgroundVideo.getWidth() / (float) backgroundVideo.getHeight();
                     float scaleX = videoRatio / screenRatio;
                     if (scaleX >= 1f) {
-                        background_video.setScaleX(scaleX);
+                        backgroundVideo.setScaleX(scaleX);
                     } else {
-                        background_video.setScaleY(1f / scaleX);
+                        backgroundVideo.setScaleY(1f / scaleX);
                     }
                     mp.start();
                 }
             });
 
-            background_video.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            backgroundVideo.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                 @Override
                 public boolean onError(MediaPlayer mp, int what, int extra) {
-                    background_video.setVisibility(View.GONE);
+                    backgroundVideo.setVisibility(View.GONE);
                     getActivity().getSharedPreferences("preferences", Context.MODE_PRIVATE).edit().
                             putBoolean("background_video_on", false).apply();
                     Toast.makeText(getContext(), R.string.bg_video_error_toast, Toast.LENGTH_SHORT).show();
@@ -101,7 +132,7 @@ public class ListenFragment extends Fragment {
             });
 
         } else {
-            background_video.setVisibility(View.GONE);
+            backgroundVideo.setVisibility(View.GONE);
             ImageView background = new ImageView(getContext());
             int image_choice = new Random().nextInt(3), imageResId;
             if (image_choice == 0)
@@ -114,28 +145,42 @@ public class ListenFragment extends Fragment {
             background.setImageResource(imageResId);
             background.setZ(-1);        //send to back of everything
             background.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            background.setLayoutParams(background_video.getLayoutParams());
-            ((ConstraintLayout) fragmentView.findViewById(R.id.listen_root)).addView(background);
+            background.setLayoutParams(backgroundVideo.getLayoutParams());
+            ((ConstraintLayout) root.findViewById(R.id.listen_root)).addView(background);
+        }
+    }
+
+    private final ValueEventListener feedListener = new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot snapshot) {
+            if (snapshot.exists()) {
+                liveFeedActive = true;
+                final String[] pages = new String[(int) snapshot.getChildrenCount()];
+                int i = 0;
+
+                if (syncButton.getVisibility() == View.GONE)
+                    liveFeedButton.setVisibility(View.VISIBLE);
+
+                for (DataSnapshot element : snapshot.getChildren()) {
+                    pages[i] = element.child("image").getValue().toString();
+                    Glide.with(getActivity()).load(pages[i]).preload();
+                    ++i;
+                }
+                liveFeedButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(getActivity(), FeedActivity.class);
+                        intent.putExtra("pages", pages);
+                        startActivity(intent);
+                    }
+                });
+            }
         }
 
-        now_playing_title = fragmentView.findViewById(R.id.now_playing_title);
-        now_song_view = fragmentView.findViewById(R.id.song_name_view);
-        now_song_view.setInAnimation(getContext(), android.R.anim.slide_in_left);
-        now_song_view.setOutAnimation(getContext(), android.R.anim.slide_out_right);
-
-        play_pause_btn = fragmentView.findViewById(R.id.play_pause_view);
-        offset_text = fragmentView.findViewById(R.id.offset_text);
-        sync_button = fragmentView.findViewById(R.id.sync_button);
-        sync_progress = fragmentView.findViewById(R.id.sync_progress);
-
-        play_pause_btn.setOnClickListener(onPlayPauseClick);
-        sync_button.setOnClickListener(onSyncClick);
-
-        EventList e = new EventList((LinearLayout) fragmentView.findViewById(R.id.event_list));
-        e.populate();
-
-        return fragmentView;
-    }
+        @Override
+        public void onCancelled(@NonNull DatabaseError error) {
+        }
+    };
 
     private final View.OnClickListener onPlayPauseClick = new View.OnClickListener() {
         @Override
@@ -188,7 +233,7 @@ public class ListenFragment extends Fragment {
     private void updatePlayPauseViewWithAnim(boolean isPaused) {
 
         Drawable avd = ResourcesCompat.getDrawable(getResources(), isPaused ? R.drawable.avd_pause_to_play : R.drawable.avd_play_to_pause, null);
-        play_pause_btn.setImageDrawable(avd);
+        playPauseBtn.setImageDrawable(avd);
 
         if (avd instanceof AnimatedVectorDrawable) {
             ((AnimatedVectorDrawable) avd).start();
@@ -199,7 +244,7 @@ public class ListenFragment extends Fragment {
     }
 
     private void updateSyncViews(int sync_state) {
-        TransitionManager.beginDelayedTransition((ConstraintLayout) sync_button.getParent());
+        TransitionManager.beginDelayedTransition((ConstraintLayout) syncButton.getParent());
 
         if (sync_state == 0) {    //sync button
             int offset_in_sec = getRadioPlayer().getPlayerOffset();
@@ -212,45 +257,48 @@ public class ListenFragment extends Fragment {
                 elapsed_time = getString(R.string.elapsed_minutes, elapsed_min, elapsed_sec);
             }
 
-            offset_text.setText(elapsed_time);
-            offset_text.setVisibility(View.VISIBLE);
-            sync_button.setEnabled(true);
-            sync_button.setText(R.string.sync_text);
-            sync_button.setVisibility(View.VISIBLE);
-            sync_progress.setVisibility(View.GONE);
-            now_playing_title.setEnabled(true);     //show exclamation
+            liveFeedButton.setVisibility(View.GONE);
+            offsetText.setText(elapsed_time);
+            offsetText.setVisibility(View.VISIBLE);
+            syncButton.setEnabled(true);
+            syncButton.setText(R.string.sync_text);
+            syncButton.setVisibility(View.VISIBLE);
+            syncProgress.setVisibility(View.GONE);
+            nowPlayingTitle.setEnabled(true);     //show exclamation
 
         } else if (sync_state == 1) {      //sync progress
-            offset_text.setVisibility(View.GONE);
-            sync_button.setVisibility(View.VISIBLE);
-            sync_button.setText(R.string.syncing_text);
-            sync_button.setEnabled(false);
-            sync_progress.setVisibility(View.VISIBLE);
+            offsetText.setVisibility(View.GONE);
+            syncButton.setVisibility(View.VISIBLE);
+            syncButton.setText(R.string.syncing_text);
+            syncButton.setEnabled(false);
+            syncProgress.setVisibility(View.VISIBLE);
 
         } else if (sync_state == 2) {     //sync operation completed
-            offset_text.setVisibility(View.GONE);
-            sync_button.setVisibility(View.GONE);
-            sync_progress.setVisibility(View.GONE);
-            now_playing_title.setEnabled(false);
+            offsetText.setVisibility(View.GONE);
+            syncButton.setVisibility(View.GONE);
+            syncProgress.setVisibility(View.GONE);
+            if (liveFeedActive)
+                liveFeedButton.setVisibility(View.VISIBLE);
+            nowPlayingTitle.setEnabled(false);
         }
     }
 
     private void startNowPlayingViews(String song, String artist) {
         final int animation_duration = 450;
-        now_song_view.setCurrentText(song + " - " + artist);
-        now_song_view.setSelected(true);    //to start marquee
+        nowSongView.setCurrentText(song + " - " + artist);
+        nowSongView.setSelected(true);    //to start marquee
 
-        now_song_view.setX(-now_song_view.getWidth());
-        now_playing_title.setX(-now_playing_title.getWidth());
+        nowSongView.setX(-nowSongView.getWidth());
+        nowPlayingTitle.setX(-nowPlayingTitle.getWidth());
 
-        now_playing_title.animate().alpha(1f).translationX(0).setDuration(animation_duration);
-        now_song_view.animate().alpha(1f).translationX(0).setStartDelay(animation_duration).
+        nowPlayingTitle.animate().alpha(1f).translationX(0).setDuration(animation_duration);
+        nowSongView.animate().alpha(1f).translationX(0).setStartDelay(animation_duration).
                 setDuration(animation_duration);
         nowPlayingStarted = true;
     }
 
     private void updateNowPlayingViews(String song, String artist) {
-        now_song_view.setText(song + " - " + artist);
+        nowSongView.setText(song + " - " + artist);
     }
 
     @Override
@@ -279,7 +327,7 @@ public class ListenFragment extends Fragment {
     void updateViewsOnResume() {
         RadioPlayerService player = getRadioPlayer();
 
-        play_pause_btn.setImageResource(player.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
+        playPauseBtn.setImageResource(player.isPaused() ? R.drawable.ic_play : R.drawable.ic_pause);
 
         if (player.getPlayerOffset() != 0) {
             if (player.getConnectionState() == RadioPlayerService.ConnectionStatus.SUCCESS)
@@ -299,5 +347,11 @@ public class ListenFragment extends Fragment {
 
     private RadioPlayerService getRadioPlayer() {
         return ((MainActivity) getContext()).radioPlayerService;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        FirebaseDatabase.getInstance().getReference().child("LiveFeed").removeEventListener(feedListener);
     }
 }

@@ -51,4 +51,5 @@
     <string name="random_text">RANDOM</string>
     <string name="events_menu_title">Events</string>
     <string name="event_fragment_title">Our Events</string>
+    <string name="view_live_feed">View Live Feed</string>
 </resources>
