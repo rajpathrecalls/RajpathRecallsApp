@@ -35,7 +35,6 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:scaleType="centerCrop"
-                android:src="@drawable/listen_fragment_bg_2"
                 android:transitionName="eventImage"
                 app:layout_constraintDimensionRatio="H1,1"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -60,19 +59,20 @@
                 android:layout_marginTop="5dp"
                 android:fontFamily="@font/montserrat_semibold"
                 android:labelFor="@id/event_image"
-                android:text="BruhTime"
+                tools:text="BruhTime"
                 android:textColor="@color/colorAccent"
                 android:textSize="19sp"
                 app:layout_constraintEnd_toStartOf="@+id/share_button"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/event_image" />
+                app:layout_constraintTop_toBottomOf="@+id/event_image"
+                tools:ignore="LabelFor" />
 
             <TextView
                 android:id="@+id/event_host"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/montserrat_medium"
-                android:text="RJ Mann"
+                tools:text="RJ Mann"
                 android:textColor="@color/colorAccentHalf"
                 android:textSize="15sp"
                 app:layout_constraintEnd_toEndOf="@+id/event_title"
